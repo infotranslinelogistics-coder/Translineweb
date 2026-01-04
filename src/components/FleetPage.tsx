@@ -4,7 +4,7 @@ export function FleetPage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="bg-gray-900 text-white py-20">
+      <section className="bg-gray-900 text-white py-20 scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-white mb-4">Our Fleet</h1>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
@@ -14,7 +14,7 @@ export function FleetPage() {
       </section>
 
       {/* Fleet Introduction */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white scroll-reveal">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-gray-600 mb-4">
             At Transline Logistics, we maintain a diverse fleet of company-owned vehicles to ensure we can handle any transport requirement. From small courier parcels to heavy commercial freight, our fleet is equipped, maintained, and ready.
@@ -26,10 +26,10 @@ export function FleetPage() {
       </section>
 
       {/* Fleet Vehicles */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-50 scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           {/* Vans */}
-          <div className="bg-white rounded-lg shadow-sm p-8">
+          <div className="surface-card p-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-1">
                 <div className="bg-[#FEF2F2] w-16 h-16 rounded-lg flex items-center justify-center mb-4">
@@ -55,7 +55,7 @@ export function FleetPage() {
           </div>
 
           {/* Flatbeds */}
-          <div className="bg-white rounded-lg shadow-sm p-8">
+          <div className="surface-card p-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-1">
                 <div className="bg-[#FEF2F2] w-16 h-16 rounded-lg flex items-center justify-center mb-4">
@@ -81,7 +81,7 @@ export function FleetPage() {
           </div>
 
           {/* Curtainsiders */}
-          <div className="bg-white rounded-lg shadow-sm p-8">
+          <div className="surface-card p-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-1">
                 <div className="bg-[#FEF2F2] w-16 h-16 rounded-lg flex items-center justify-center mb-4">
@@ -107,7 +107,7 @@ export function FleetPage() {
           </div>
 
           {/* Pantechs */}
-          <div className="bg-white rounded-lg shadow-sm p-8">
+          <div className="surface-card p-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-1">
                 <div className="bg-[#FEF2F2] w-16 h-16 rounded-lg flex items-center justify-center mb-4">
@@ -135,7 +135,7 @@ export function FleetPage() {
       </section>
 
       {/* Fleet Benefits */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-center mb-12">Fleet Advantages</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -171,13 +171,13 @@ export function FleetPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-[#D32323] text-white">
+      <section className="py-16 bg-[#D32323] text-white scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="mb-4 text-white">Not Sure Which Vehicle You Need?</h2>
           <p className="text-xl text-red-100 mb-8 max-w-2xl mx-auto">
             Contact our team and we'll recommend the best vehicle for your transport requirements.
           </p>
-          <button className="bg-white text-[#D32323] px-8 py-3 rounded hover:bg-gray-100 transition-colors">
+          <button className="interactive-button bg-white text-[#D32323] px-8 py-3 rounded hover:bg-gray-100">
             Get Expert Advice
           </button>
         </div>

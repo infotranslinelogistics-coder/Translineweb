@@ -76,6 +76,64 @@
 
   html {
     font-size: var(--font-size);
+    scroll-behavior: smooth;
+    background: var(--background);
+  }
+}
+
+@layer components {
+  .interactive-button {
+    @apply inline-flex items-center justify-center rounded-lg font-medium transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#D32323]/60 focus:ring-offset-white;
+    box-shadow: 0 12px 32px rgba(211, 35, 35, 0.14);
+    transform: translateY(0);
+  }
+
+  .interactive-button:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 18px 44px rgba(211, 35, 35, 0.18);
+  }
+
+  .interactive-button:active {
+    transform: translateY(0);
+  }
+
+  .text-button-animate {
+    @apply relative inline-flex items-center gap-1 transition-all duration-200 ease-out;
+    transform: translateY(0);
+  }
+
+  .text-button-animate::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, #d32323, rgba(211, 35, 35, 0.25));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 200ms ease, opacity 200ms ease;
+    opacity: 0.4;
+  }
+
+  .text-button-animate:hover {
+    transform: translateY(-1px);
+  }
+
+  .text-button-animate:hover::after {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+
+  .surface-card {
+    @apply bg-white rounded-xl shadow-sm border border-[#F1E3E3];
+    transition: transform 400ms ease, box-shadow 400ms ease, border-color 400ms ease;
+  }
+
+  .surface-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 22px 50px rgba(3, 2, 19, 0.08);
+    border-color: #f3d8d8;
   }
 }
 
@@ -99,5 +157,29 @@
 @layer utilities {
   .animate-logo-pop {
     animation: logo-pop 650ms ease-out;
+  }
+
+  .scroll-reveal {
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 700ms ease, transform 700ms ease;
+    transition-delay: var(--reveal-delay, 0s);
+  }
+
+  .scroll-reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .interactive-button,
+  .surface-card,
+  .scroll-reveal,
+  .text-button-animate {
+    transition: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
   }
 }

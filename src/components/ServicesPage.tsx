@@ -4,7 +4,7 @@ export function ServicesPage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="bg-gray-900 text-white py-20">
+      <section className="bg-gray-900 text-white py-20 scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-white mb-4">Our Services</h1>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
@@ -14,10 +14,10 @@ export function ServicesPage() {
       </section>
 
       {/* Services */}
-      <section className="py-16">
+      <section className="py-16 scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
           {/* Freight Delivery */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center scroll-reveal">
             <div>
               <div className="bg-[#FEF2F2] w-16 h-16 rounded-lg flex items-center justify-center mb-6">
                 <Truck className="h-8 w-8 text-[#D32323]" />
@@ -54,7 +54,7 @@ export function ServicesPage() {
           </div>
 
           {/* Courier Services */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center scroll-reveal">
             <div
               className="h-96 bg-cover bg-center rounded-lg order-2 lg:order-1"
               style={{
@@ -91,7 +91,7 @@ export function ServicesPage() {
           </div>
 
           {/* Removals */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center scroll-reveal">
             <div>
               <div className="bg-[#FEF2F2] w-16 h-16 rounded-lg flex items-center justify-center mb-6">
                 <Home className="h-8 w-8 text-[#D32323]" />
@@ -128,7 +128,7 @@ export function ServicesPage() {
           </div>
 
           {/* Fleet Transport Solutions */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center scroll-reveal">
             <div
               className="h-96 bg-cover bg-center rounded-lg order-2 lg:order-1"
               style={{
@@ -167,13 +167,13 @@ export function ServicesPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-50 scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="mb-4">Need a Transport Solution?</h2>
           <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
             Get in touch with our team to discuss your requirements and receive a competitive quote.
           </p>
-          <button className="bg-[#D32323] text-white px-8 py-3 rounded hover:bg-[#B01E1E] transition-colors">
+          <button className="interactive-button bg-[#D32323] text-white px-8 py-3 rounded hover:bg-[#B01E1E]">
             Request a Quote
           </button>
         </div>

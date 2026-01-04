@@ -2,7 +2,7 @@ export function TermsPage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="bg-gray-900 text-white py-20">
+      <section className="bg-gray-900 text-white py-20 scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-white mb-4">Terms & Conditions</h1>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
@@ -12,7 +12,7 @@ export function TermsPage() {
       </section>
 
       {/* Terms Content */}
-      <section className="py-16">
+      <section className="py-16 scroll-reveal">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           <div>
             <h2 className="mb-4">1. Agreement to Terms</h2>

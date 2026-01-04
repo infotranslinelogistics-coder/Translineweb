@@ -67,7 +67,7 @@ export function FaqPage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="bg-gray-900 text-white py-20">
+      <section className="bg-gray-900 text-white py-20 scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-white mb-4">Frequently Asked Questions</h1>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
@@ -77,11 +77,11 @@ export function FaqPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-16">
+      <section className="py-16 scroll-reveal">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="space-y-4">
             {faqs.map((faq, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-sm">
+              <div key={index} className="surface-card">
                 <button
                   onClick={() => toggleFaq(index)}
                   className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors"
@@ -105,13 +105,13 @@ export function FaqPage() {
       </section>
 
       {/* Still Have Questions Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-50 scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="mb-4">Still Have Questions?</h2>
           <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
             If you can't find the answer you're looking for, our team is here to help. Get in touch and we'll provide the information you need.
           </p>
-          <button className="bg-[#D32323] text-white px-8 py-3 rounded hover:bg-[#B01E1E] transition-colors">
+          <button className="interactive-button bg-[#D32323] text-white px-8 py-3 rounded hover:bg-[#B01E1E]">
             Contact Us
           </button>
         </div>

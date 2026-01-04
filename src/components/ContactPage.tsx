@@ -58,7 +58,7 @@ export function ContactPage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="bg-gray-900 text-white py-20">
+      <section className="bg-gray-900 text-white py-20 scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-white mb-4">Contact Us</h1>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
@@ -68,7 +68,7 @@ export function ContactPage() {
       </section>
 
       {/* Contact Information & Form */}
-      <section className="py-16">
+      <section className="py-16 scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             {/* Contact Information */}
@@ -129,7 +129,7 @@ export function ContactPage() {
 
             {/* Contact Form */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow-sm p-8">
+              <div className="surface-card p-8">
                 <h2 className="mb-6">Send Us a Message</h2>
                 {submitted ? (
                   <div className="bg-green-50 border border-green-200 text-green-800 px-6 py-4 rounded-lg">
@@ -236,7 +236,7 @@ export function ContactPage() {
 
                     <button
                       type="submit"
-                      className="w-full bg-[#D32323] text-white px-8 py-3 rounded hover:bg-[#B01E1E] transition-colors"
+                      className="interactive-button w-full bg-[#D32323] text-white px-8 py-3 rounded hover:bg-[#B01E1E]"
                     >
                       Send Message
                     </button>
@@ -249,7 +249,7 @@ export function ContactPage() {
       </section>
 
       {/* Fast Response Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-50 scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="mb-4">Fast Response Times</h2>
           <p className="text-gray-600 max-w-2xl mx-auto mb-8">

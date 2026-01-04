@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { HomePage } from './components/HomePage';
@@ -14,6 +14,29 @@ export type Page = 'home' | 'services' | 'fleet' | 'contact' | 'faq' | 'quote' |
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
+
+  useEffect(() => {
+    const elements = document.querySelectorAll('.scroll-reveal');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    elements.forEach((el, index) => {
+      const delay = Math.min(index * 0.08, 0.6);
+      (el as HTMLElement).style.setProperty('--reveal-delay', `${delay}s`);
+      observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [currentPage]);
 
   const renderPage = () => {
     switch (currentPage) {
