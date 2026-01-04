@@ -13,12 +13,25 @@ export function ContactPage() {
 
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // In a real application, this would send the form data to a backend
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
+
+    const form = e.currentTarget;
+    const payload = new URLSearchParams();
+    const formDataWithMetadata = new FormData(form);
+
+    formDataWithMetadata.forEach((value, key) => {
+      payload.append(key, value.toString());
+    });
+
+    try {
+      await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: payload.toString(),
+      });
+
+      setSubmitted(true);
       setFormData({
         name: '',
         email: '',
@@ -26,7 +39,13 @@ export function ContactPage() {
         service: '',
         message: '',
       });
-    }, 3000);
+
+      setTimeout(() => {
+        setSubmitted(false);
+      }, 3000);
+    } catch (error) {
+      console.error('Form submission failed', error);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -117,7 +136,20 @@ export function ContactPage() {
                     <p>Thank you for your enquiry! We'll get back to you shortly.</p>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="space-y-6">
+                  <form
+                    name="contact"
+                    method="POST"
+                    data-netlify="true"
+                    data-netlify-honeypot="bot-field"
+                    onSubmit={handleSubmit}
+                    className="space-y-6"
+                  >
+                    <input type="hidden" name="form-name" value="contact" />
+                    <div className="hidden">
+                      <label>
+                        Don’t fill this out if you're human: <input name="bot-field" />
+                      </label>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label htmlFor="name" className="block mb-2 text-gray-700">
