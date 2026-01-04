@@ -20,11 +20,43 @@ export function QuotePage() {
 
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // In a real application, this would send the form data to a backend
-    setSubmitted(true);
-    window.scrollTo(0, 0);
+
+    const form = e.currentTarget;
+    const payload = new URLSearchParams();
+    const formDataWithMetadata = new FormData(form);
+
+    formDataWithMetadata.forEach((value, key) => {
+      payload.append(key, value.toString());
+    });
+
+    try {
+      await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: payload.toString(),
+      });
+
+      setSubmitted(true);
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        company: '',
+        service: '',
+        pickupLocation: '',
+        deliveryLocation: '',
+        loadDescription: '',
+        weight: '',
+        dimensions: '',
+        preferredDate: '',
+        additionalInfo: '',
+      });
+      window.scrollTo(0, 0);
+    } catch (error) {
+      console.error('Form submission failed', error);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -112,7 +144,20 @@ export function QuotePage() {
       <section className="py-16 bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white rounded-lg shadow-sm p-8">
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form
+              name="quote"
+              method="POST"
+              data-netlify="true"
+              data-netlify-honeypot="bot-field"
+              onSubmit={handleSubmit}
+              className="space-y-8"
+            >
+              <input type="hidden" name="form-name" value="quote" />
+              <div className="hidden">
+                <label>
+                  Don’t fill this out if you're human: <input name="bot-field" />
+                </label>
+              </div>
               {/* Contact Information */}
               <div>
                 <h2 className="mb-6">Contact Information</h2>
