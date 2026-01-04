@@ -89,11 +89,11 @@ export function Footer({ onNavigate }: FooterProps) {
             <ul className="space-y-2">
               <li className="flex items-center gap-2 text-sm">
                 <Phone className="h-4 w-4" />
-                <span>1300 TRANSLINE</span>
+                <span>0466582734</span>
               </li>
               <li className="flex items-center gap-2 text-sm">
                 <Mail className="h-4 w-4" />
-                <span>info@translinelogistics.com.au</span>
+                <span>admin@translinelogistics.org</span>
               </li>
             </ul>
             <button

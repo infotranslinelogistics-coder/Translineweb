@@ -148,11 +148,11 @@ export function TermsPage() {
             </p>
             <div className="bg-gray-50 p-6 rounded-lg">
               <p className="text-gray-600 mb-2">
-                <span className="text-gray-900">Email:</span> info@translinelogistics.com.au
-              </p>
-              <p className="text-gray-600">
-                <span className="text-gray-900">Phone:</span> 1300 TRANSLINE
-              </p>
+                <span className="text-gray-900">Email:</span> admin@translinelogistics.org
+            </p>
+            <p className="text-gray-600">
+                <span className="text-gray-900">Phone:</span> 0466582734
+            </p>
             </div>
           </div>
 
