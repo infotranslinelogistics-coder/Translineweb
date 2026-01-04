@@ -14,7 +14,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative h-[600px] flex items-center">
+      <section className="relative h-[600px] flex items-center scroll-reveal">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
@@ -33,13 +33,13 @@ export function HomePage({ onNavigate }: HomePageProps) {
           <div className="flex flex-wrap gap-4">
             <button
               onClick={() => handleNavigate('quote')}
-              className="bg-[#D32323] text-white px-8 py-3 rounded hover:bg-[#B01E1E] transition-colors"
+              className="interactive-button bg-[#D32323] text-white px-8 py-3 rounded hover:bg-[#B01E1E]"
             >
               Get a Quote
             </button>
             <button
               onClick={() => handleNavigate('contact')}
-              className="bg-white text-gray-900 px-8 py-3 rounded hover:bg-gray-100 transition-colors"
+              className="interactive-button bg-white text-gray-900 px-8 py-3 rounded hover:bg-gray-100"
             >
               Contact Us
             </button>
@@ -48,7 +48,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
       </section>
 
       {/* About Overview */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="mb-6">About Transline Logistics</h2>
@@ -63,12 +63,12 @@ export function HomePage({ onNavigate }: HomePageProps) {
       </section>
 
       {/* Services Overview */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-50 scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-center mb-12">Our Services</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Freight Delivery */}
-            <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+            <div className="surface-card p-6">
               <div className="bg-[#FEF2F2] w-12 h-12 rounded-lg flex items-center justify-center mb-4">
                 <Truck className="h-6 w-6 text-[#D32323]" />
               </div>
@@ -76,16 +76,13 @@ export function HomePage({ onNavigate }: HomePageProps) {
               <p className="text-gray-600 text-sm mb-4">
                 Local and regional freight transport for palletised, bulk, and general freight. Reliable service for all load sizes.
               </p>
-              <button
-                onClick={() => handleNavigate('services')}
-                className="text-[#D32323] hover:text-[#B01E1E] text-sm"
-              >
+              <button onClick={() => handleNavigate('services')} className="text-button-animate text-[#D32323] text-sm">
                 Learn more →
               </button>
             </div>
 
             {/* Courier Services */}
-            <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+            <div className="surface-card p-6">
               <div className="bg-[#FEF2F2] w-12 h-12 rounded-lg flex items-center justify-center mb-4">
                 <Package className="h-6 w-6 text-[#D32323]" />
               </div>
@@ -93,16 +90,13 @@ export function HomePage({ onNavigate }: HomePageProps) {
               <p className="text-gray-600 text-sm mb-4">
                 Fast and secure courier delivery for parcels, documents, and time-sensitive items across metro and regional areas.
               </p>
-              <button
-                onClick={() => handleNavigate('services')}
-                className="text-[#D32323] hover:text-[#B01E1E] text-sm"
-              >
+              <button onClick={() => handleNavigate('services')} className="text-button-animate text-[#D32323] text-sm">
                 Learn more →
               </button>
             </div>
 
             {/* Removals */}
-            <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+            <div className="surface-card p-6">
               <div className="bg-[#FEF2F2] w-12 h-12 rounded-lg flex items-center justify-center mb-4">
                 <Home className="h-6 w-6 text-[#D32323]" />
               </div>
@@ -110,16 +104,13 @@ export function HomePage({ onNavigate }: HomePageProps) {
               <p className="text-gray-600 text-sm mb-4">
                 Residential and commercial removals with safe handling of furniture, equipment, and goods. Professional service you can trust.
               </p>
-              <button
-                onClick={() => handleNavigate('services')}
-                className="text-[#D32323] hover:text-[#B01E1E] text-sm"
-              >
+              <button onClick={() => handleNavigate('services')} className="text-button-animate text-[#D32323] text-sm">
                 Learn more →
               </button>
             </div>
 
             {/* Commercial Transport */}
-            <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+            <div className="surface-card p-6">
               <div className="bg-[#FEF2F2] w-12 h-12 rounded-lg flex items-center justify-center mb-4">
                 <Users className="h-6 w-6 text-[#D32323]" />
               </div>
@@ -127,10 +118,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
               <p className="text-gray-600 text-sm mb-4">
                 Flexible transport solutions for businesses. One-off deliveries or ongoing contracts, we match the right vehicle to your needs.
               </p>
-              <button
-                onClick={() => handleNavigate('services')}
-                className="text-[#D32323] hover:text-[#B01E1E] text-sm"
-              >
+              <button onClick={() => handleNavigate('services')} className="text-button-animate text-[#D32323] text-sm">
                 Learn more →
               </button>
             </div>
@@ -139,7 +127,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
       </section>
 
       {/* Fleet Overview */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="mb-4">Our Fleet</h2>
@@ -148,28 +136,25 @@ export function HomePage({ onNavigate }: HomePageProps) {
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-gray-50 p-6 rounded-lg text-center">
+            <div className="surface-card bg-gray-50 p-6 text-center">
               <h3 className="mb-2">Vans</h3>
               <p className="text-gray-600 text-sm">Small to large cargo vans for flexible delivery solutions</p>
             </div>
-            <div className="bg-gray-50 p-6 rounded-lg text-center">
+            <div className="surface-card bg-gray-50 p-6 text-center">
               <h3 className="mb-2">Flatbeds</h3>
               <p className="text-gray-600 text-sm">Open platform trucks for oversized and irregular loads</p>
             </div>
-            <div className="bg-gray-50 p-6 rounded-lg text-center">
+            <div className="surface-card bg-gray-50 p-6 text-center">
               <h3 className="mb-2">Curtainsiders</h3>
               <p className="text-gray-600 text-sm">Side-loading capability for efficient freight handling</p>
             </div>
-            <div className="bg-gray-50 p-6 rounded-lg text-center">
+            <div className="surface-card bg-gray-50 p-6 text-center">
               <h3 className="mb-2">Pantechs</h3>
               <p className="text-gray-600 text-sm">6–14 tonne capacity for substantial commercial freight</p>
             </div>
           </div>
           <div className="text-center mt-8">
-            <button
-              onClick={() => handleNavigate('fleet')}
-              className="bg-[#D32323] text-white px-8 py-3 rounded hover:bg-[#B01E1E] transition-colors"
-            >
+            <button onClick={() => handleNavigate('fleet')} className="interactive-button bg-[#D32323] text-white px-8 py-3 rounded hover:bg-[#B01E1E]">
               View Full Fleet
             </button>
           </div>
@@ -177,7 +162,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
       </section>
 
       {/* Why Choose Us */}
-      <section className="py-16 bg-gray-900 text-white">
+      <section className="py-16 bg-gray-900 text-white scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-center mb-12 text-white">Why Choose Transline Logistics</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -222,22 +207,19 @@ export function HomePage({ onNavigate }: HomePageProps) {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-[#D32323] text-white">
+      <section className="py-16 bg-[#D32323] text-white scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="mb-4 text-white">Ready to Get Started?</h2>
           <p className="text-xl text-red-100 mb-8 max-w-2xl mx-auto">
             Contact us today for a fast quote on your freight, courier, or removals needs.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <button
-              onClick={() => handleNavigate('quote')}
-              className="bg-white text-[#D32323] px-8 py-3 rounded hover:bg-gray-100 transition-colors"
-            >
+            <button onClick={() => handleNavigate('quote')} className="interactive-button bg-white text-[#D32323] px-8 py-3 rounded hover:bg-gray-100">
               Get a Quote
             </button>
             <button
               onClick={() => handleNavigate('contact')}
-              className="border-2 border-white text-white px-8 py-3 rounded hover:bg-[#B01E1E] transition-colors"
+              className="interactive-button border-2 border-white text-white px-8 py-3 rounded hover:bg-[#B01E1E]"
             >
               Contact Us
             </button>

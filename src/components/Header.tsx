@@ -32,7 +32,7 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
           {/* Logo */}
           <button
             onClick={() => handleNavigate('home')}
-            className="flex items-center gap-3 bg-[#FEF2F2]/80 px-4 py-2 rounded-xl border border-[#FAD4D4]/80 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:border-[#D32323]/60 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#D32323]/60 focus:ring-offset-white"
+            className="interactive-button flex items-center gap-3 bg-[#FEF2F2]/80 px-4 py-2 rounded-xl border border-[#FAD4D4]/80 shadow-sm"
           >
             <img
               src={logo}
@@ -47,7 +47,7 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
               <button
                 key={item.page}
                 onClick={() => handleNavigate(item.page)}
-                className={`transition-colors ${
+                className={`text-button-animate ${
                   currentPage === item.page
                     ? 'text-[#D32323]'
                     : 'text-gray-600 hover:text-gray-900'
@@ -58,7 +58,7 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
             ))}
             <button
               onClick={() => handleNavigate('quote')}
-              className="bg-[#D32323] text-white px-6 py-2 rounded hover:bg-[#B01E1E] transition-colors"
+              className="interactive-button bg-[#D32323] text-white px-6 py-2 rounded hover:bg-[#B01E1E]"
             >
               Get a Quote
             </button>
@@ -80,7 +80,7 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
               <button
                 key={item.page}
                 onClick={() => handleNavigate(item.page)}
-                className={`block w-full text-left px-4 py-3 transition-colors ${
+                className={`block w-full text-left px-4 py-3 text-button-animate ${
                   currentPage === item.page
                     ? 'text-[#D32323] bg-[#FEF2F2]'
                     : 'text-gray-600 hover:bg-gray-50'
@@ -91,7 +91,7 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
             ))}
             <button
               onClick={() => handleNavigate('quote')}
-              className="w-full mt-2 bg-[#D32323] text-white px-4 py-3 rounded hover:bg-[#B01E1E] transition-colors"
+              className="interactive-button w-full mt-2 bg-[#D32323] text-white px-4 py-3 rounded hover:bg-[#B01E1E]"
             >
               Get a Quote
             </button>

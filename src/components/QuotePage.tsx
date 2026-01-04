@@ -131,7 +131,7 @@ export function QuotePage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="bg-gray-900 text-white py-20">
+      <section className="bg-gray-900 text-white py-20 scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-white mb-4">Get a Quote</h1>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
@@ -141,9 +141,9 @@ export function QuotePage() {
       </section>
 
       {/* Quote Form */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-50 scroll-reveal">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-lg shadow-sm p-8">
+          <div className="surface-card p-8">
             <form
               name="quote"
               method="POST"
@@ -367,7 +367,7 @@ export function QuotePage() {
 
               <button
                 type="submit"
-                className="w-full bg-[#D32323] text-white px-8 py-3 rounded hover:bg-[#B01E1E] transition-colors"
+                className="interactive-button w-full bg-[#D32323] text-white px-8 py-3 rounded hover:bg-[#B01E1E]"
               >
                 Submit Quote Request
               </button>
@@ -377,7 +377,7 @@ export function QuotePage() {
       </section>
 
       {/* Why Get a Quote Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-center mb-12">What to Expect</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

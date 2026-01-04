@@ -18,7 +18,7 @@ export function Footer({ onNavigate }: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="md:col-span-1">
-            <div className="flex items-center gap-3 mb-4 w-fit rounded-xl bg-[#FEF2F2]/90 px-4 py-2 border border-[#FAD4D4]/80 shadow-lg shadow-[#D32323]/10">
+            <div className="interactive-button flex items-center gap-3 mb-4 w-fit rounded-xl bg-[#FEF2F2]/90 px-4 py-2 border border-[#FAD4D4]/80 shadow-lg shadow-[#D32323]/10">
               <img
                 src={logo}
                 alt="Transline Logistics"
@@ -40,7 +40,7 @@ export function Footer({ onNavigate }: FooterProps) {
               <li>
                 <button
                   onClick={() => handleNavigate('home')}
-                  className="text-sm hover:text-white transition-colors"
+                  className="text-sm text-button-animate hover:text-white"
                 >
                   Home
                 </button>
@@ -48,7 +48,7 @@ export function Footer({ onNavigate }: FooterProps) {
               <li>
                 <button
                   onClick={() => handleNavigate('services')}
-                  className="text-sm hover:text-white transition-colors"
+                  className="text-sm text-button-animate hover:text-white"
                 >
                   Services
                 </button>
@@ -56,7 +56,7 @@ export function Footer({ onNavigate }: FooterProps) {
               <li>
                 <button
                   onClick={() => handleNavigate('fleet')}
-                  className="text-sm hover:text-white transition-colors"
+                  className="text-sm text-button-animate hover:text-white"
                 >
                   Fleet
                 </button>
@@ -64,7 +64,7 @@ export function Footer({ onNavigate }: FooterProps) {
               <li>
                 <button
                   onClick={() => handleNavigate('faq')}
-                  className="text-sm hover:text-white transition-colors"
+                  className="text-sm text-button-animate hover:text-white"
                 >
                   FAQ
                 </button>
@@ -98,7 +98,7 @@ export function Footer({ onNavigate }: FooterProps) {
             </ul>
             <button
               onClick={() => handleNavigate('quote')}
-              className="mt-4 bg-[#D32323] text-white px-6 py-2 rounded hover:bg-[#B01E1E] transition-colors text-sm"
+              className="interactive-button mt-4 bg-[#D32323] text-white px-6 py-2 rounded hover:bg-[#B01E1E] text-sm"
             >
               Get a Quote
             </button>
@@ -112,13 +112,13 @@ export function Footer({ onNavigate }: FooterProps) {
           <div className="flex gap-6 text-sm">
             <button
               onClick={() => handleNavigate('privacy')}
-              className="hover:text-white transition-colors"
+              className="text-button-animate hover:text-white"
             >
               Privacy Policy
             </button>
             <button
               onClick={() => handleNavigate('terms')}
-              className="hover:text-white transition-colors"
+              className="text-button-animate hover:text-white"
             >
               Terms & Conditions
             </button>
