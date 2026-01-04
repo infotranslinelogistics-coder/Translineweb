@@ -1,7 +1,7 @@
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import type { Page } from '../App';
-import logo from '../assets/logo.svg';
+import logo from '../assets/Translines (2).png';
 
 interface HeaderProps {
   currentPage: Page;

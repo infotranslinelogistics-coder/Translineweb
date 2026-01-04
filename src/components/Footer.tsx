@@ -1,6 +1,6 @@
 import { Mail, Phone } from 'lucide-react';
 import type { Page } from '../App';
-import logo from '../assets/logo.svg';
+import logo from '../assets/Translines (2).png';
 
 interface FooterProps {
   onNavigate: (page: Page) => void;
