@@ -26,15 +26,19 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <header className="bg-gradient-to-r from-white via-[#FFF7F7] to-white border-b border-[#FAD4D4]/70 shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <button
             onClick={() => handleNavigate('home')}
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            className="flex items-center gap-3 bg-[#FEF2F2]/80 px-4 py-2 rounded-xl border border-[#FAD4D4]/80 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:border-[#D32323]/60 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#D32323]/60 focus:ring-offset-white"
           >
-            <img src={logo} alt="Transline Logistics" className="h-10" />
+            <img
+              src={logo}
+              alt="Transline Logistics"
+              className="h-12 w-auto animate-logo-pop drop-shadow-sm transition-transform duration-300 ease-out hover:scale-105"
+            />
           </button>
 
           {/* Desktop Navigation */}
@@ -63,7 +67,7 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-gray-600 hover:text-gray-900"
+            className="md:hidden p-2 text-gray-600 hover:text-[#D32323] transition-colors"
           >
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
