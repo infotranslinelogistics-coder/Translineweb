@@ -25,7 +25,7 @@ const faqs: FaqItem[] = [
   },
   {
     question: 'How do I get a quote?',
-    answer: 'You can request a quote by calling us on 1300 TRANSLINE, emailing info@translinelogistics.com.au, or filling out the quote request form on our website. Please provide details including pickup and delivery locations, load description, approximate size/weight, and preferred timing for the most accurate quote.',
+    answer: 'You can request a quote by calling us on 0466582734, emailing admin@translinelogistics.org, or filling out the quote request form on our website. Please provide details including pickup and delivery locations, load description, approximate size/weight, and preferred timing for the most accurate quote.',
   },
   {
     question: 'Do you provide one-off and ongoing transport services?',

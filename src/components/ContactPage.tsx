@@ -87,7 +87,7 @@ export function ContactPage() {
                   </div>
                   <div>
                     <h3 className="mb-1">Phone</h3>
-                    <p className="text-gray-600">1300 TRANSLINE</p>
+                    <p className="text-gray-600">0466582734</p>
                     <p className="text-gray-600">Mon–Fri: 7am–6pm</p>
                   </div>
                 </div>
@@ -98,7 +98,7 @@ export function ContactPage() {
                   </div>
                   <div>
                     <h3 className="mb-1">Email</h3>
-                    <p className="text-gray-600">info@translinelogistics.com.au</p>
+                    <p className="text-gray-600">admin@translinelogistics.org</p>
                     <p className="text-gray-500 text-sm">We respond within 2 business hours</p>
                   </div>
                 </div>
