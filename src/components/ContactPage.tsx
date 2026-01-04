@@ -1,60 +1,6 @@
-import type React from 'react';
 import { Clock, Mail, MapPin, Phone } from 'lucide-react';
-import { useState } from 'react';
 
 export function ContactPage() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    service: '',
-    message: '',
-  });
-
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const form = e.currentTarget;
-    const payload = new URLSearchParams();
-    const formDataWithMetadata = new FormData(form);
-
-    formDataWithMetadata.forEach((value, key) => {
-      payload.append(key, value.toString());
-    });
-
-    try {
-      await fetch('/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: payload.toString(),
-      });
-
-      setSubmitted(true);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        service: '',
-        message: '',
-      });
-
-      setTimeout(() => {
-        setSubmitted(false);
-      }, 3000);
-    } catch (error) {
-      console.error('Form submission failed', error);
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
   return (
     <div>
       {/* Hero Section */}
@@ -131,117 +77,100 @@ export function ContactPage() {
             <div className="lg:col-span-2">
               <div className="surface-card p-8">
                 <h2 className="mb-6">Send Us a Message</h2>
-                {submitted ? (
-                  <div className="bg-green-50 border border-green-200 text-green-800 px-6 py-4 rounded-lg">
-                    <p>Thank you for your enquiry! We'll get back to you shortly.</p>
+                <form
+                  name="contact"
+                  method="POST"
+                  data-netlify="true"
+                  data-netlify-honeypot="bot-field"
+                  className="space-y-6"
+                >
+                  <input type="hidden" name="form-name" value="contact" />
+                  <div className="hidden">
+                    <label>
+                      Don’t fill this out if you're human: <input name="bot-field" />
+                    </label>
                   </div>
-                ) : (
-                  <form
-                    name="contact"
-                    method="POST"
-                    data-netlify="true"
-                    data-netlify-honeypot="bot-field"
-                    onSubmit={handleSubmit}
-                    className="space-y-6"
-                  >
-                    <input type="hidden" name="form-name" value="contact" />
-                    <div className="hidden">
-                      <label>
-                        Don’t fill this out if you're human: <input name="bot-field" />
-                      </label>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label htmlFor="name" className="block mb-2 text-gray-700">
-                          Full Name *
-                        </label>
-                        <input
-                          type="text"
-                          id="name"
-                          name="name"
-                          required
-                          value={formData.name}
-                          onChange={handleChange}
-                          className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D32323]"
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="email" className="block mb-2 text-gray-700">
-                          Email Address *
-                        </label>
-                        <input
-                          type="email"
-                          id="email"
-                          name="email"
-                          required
-                          value={formData.email}
-                          onChange={handleChange}
-                          className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D32323]"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label htmlFor="phone" className="block mb-2 text-gray-700">
-                          Phone Number *
-                        </label>
-                        <input
-                          type="tel"
-                          id="phone"
-                          name="phone"
-                          required
-                          value={formData.phone}
-                          onChange={handleChange}
-                          className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D32323]"
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="service" className="block mb-2 text-gray-700">
-                          Service Required *
-                        </label>
-                        <select
-                          id="service"
-                          name="service"
-                          required
-                          value={formData.service}
-                          onChange={handleChange}
-                          className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D32323]"
-                        >
-                          <option value="">Select a service</option>
-                          <option value="freight">Freight Delivery</option>
-                          <option value="courier">Courier Services</option>
-                          <option value="removals">Removals</option>
-                          <option value="commercial">Commercial Transport</option>
-                          <option value="other">Other / General Enquiry</option>
-                        </select>
-                      </div>
-                    </div>
-
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label htmlFor="message" className="block mb-2 text-gray-700">
-                        Message *
+                      <label htmlFor="name" className="block mb-2 text-gray-700">
+                        Full Name *
                       </label>
-                      <textarea
-                        id="message"
-                        name="message"
+                      <input
+                        type="text"
+                        id="name"
+                        name="name"
                         required
-                        rows={6}
-                        value={formData.message}
-                        onChange={handleChange}
-                        placeholder="Please provide details about your transport requirements, including pickup and delivery locations, load size, and preferred timing..."
                         className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D32323]"
-                      ></textarea>
+                      />
                     </div>
+                    <div>
+                      <label htmlFor="email" className="block mb-2 text-gray-700">
+                        Email Address *
+                      </label>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        required
+                        className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D32323]"
+                      />
+                    </div>
+                  </div>
 
-                    <button
-                      type="submit"
-                      className="interactive-button w-full bg-[#D32323] text-white px-8 py-3 rounded hover:bg-[#B01E1E]"
-                    >
-                      Send Message
-                    </button>
-                  </form>
-                )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="phone" className="block mb-2 text-gray-700">
+                        Phone Number *
+                      </label>
+                      <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        required
+                        className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D32323]"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="service" className="block mb-2 text-gray-700">
+                        Service Required *
+                      </label>
+                      <select
+                        id="service"
+                        name="service"
+                        required
+                        className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D32323]"
+                      >
+                        <option value="">Select a service</option>
+                        <option value="freight">Freight Delivery</option>
+                        <option value="courier">Courier Services</option>
+                        <option value="removals">Removals</option>
+                        <option value="commercial">Commercial Transport</option>
+                        <option value="other">Other / General Enquiry</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="message" className="block mb-2 text-gray-700">
+                      Message *
+                    </label>
+                    <textarea
+                      id="message"
+                      name="message"
+                      required
+                      rows={6}
+                      placeholder="Please provide details about your transport requirements, including pickup and delivery locations, load size, and preferred timing..."
+                      className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D32323]"
+                    ></textarea>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="interactive-button w-full bg-[#D32323] text-white px-8 py-3 rounded hover:bg-[#B01E1E]"
+                  >
+                    Send Message
+                  </button>
+                </form>
               </div>
             </div>
           </div>

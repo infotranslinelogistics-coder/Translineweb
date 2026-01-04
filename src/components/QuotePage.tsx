@@ -1,133 +1,6 @@
-import type React from 'react';
 import { CheckCircle, Package, Truck } from 'lucide-react';
-import { useState } from 'react';
 
 export function QuotePage() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    company: '',
-    service: '',
-    pickupLocation: '',
-    deliveryLocation: '',
-    loadDescription: '',
-    weight: '',
-    dimensions: '',
-    preferredDate: '',
-    additionalInfo: '',
-  });
-
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const form = e.currentTarget;
-    const payload = new URLSearchParams();
-    const formDataWithMetadata = new FormData(form);
-
-    formDataWithMetadata.forEach((value, key) => {
-      payload.append(key, value.toString());
-    });
-
-    try {
-      await fetch('/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: payload.toString(),
-      });
-
-      setSubmitted(true);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        company: '',
-        service: '',
-        pickupLocation: '',
-        deliveryLocation: '',
-        loadDescription: '',
-        weight: '',
-        dimensions: '',
-        preferredDate: '',
-        additionalInfo: '',
-      });
-      window.scrollTo(0, 0);
-    } catch (error) {
-      console.error('Form submission failed', error);
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  if (submitted) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-16">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <div className="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="h-10 w-10 text-green-600" />
-            </div>
-            <h1 className="mb-4">Quote Request Received</h1>
-            <p className="text-gray-600 mb-8">
-              Thank you for your quote request. Our team will review your requirements and send you a competitive quote within 2 business hours during operating hours.
-            </p>
-            <div className="bg-gray-50 p-6 rounded-lg mb-8">
-              <h2 className="mb-4">What Happens Next?</h2>
-              <div className="space-y-4 text-left">
-                <div className="flex gap-4">
-                  <div className="bg-[#D32323] text-white w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
-                    1
-                  </div>
-                  <div>
-                    <h3 className="mb-1">Quote Preparation</h3>
-                    <p className="text-gray-600 text-sm">
-                      Our team reviews your requirements and prepares a detailed quote
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="bg-[#D32323] text-white w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
-                    2
-                  </div>
-                  <div>
-                    <h3 className="mb-1">Quote Delivery</h3>
-                    <p className="text-gray-600 text-sm">
-                      You'll receive the quote via email within 2 business hours
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="bg-[#D32323] text-white w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
-                    3
-                  </div>
-                  <div>
-                    <h3 className="mb-1">Booking Confirmation</h3>
-                    <p className="text-gray-600 text-sm">
-                      Once approved, we'll schedule your transport and confirm details
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <button
-              onClick={() => setSubmitted(false)}
-              className="bg-[#D32323] text-white px-8 py-3 rounded hover:bg-[#B01E1E] transition-colors"
-            >
-              Submit Another Request
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div>
       {/* Hero Section */}
@@ -149,7 +22,6 @@ export function QuotePage() {
               method="POST"
               data-netlify="true"
               data-netlify-honeypot="bot-field"
-              onSubmit={handleSubmit}
               className="space-y-8"
             >
               <input type="hidden" name="form-name" value="quote" />
@@ -171,8 +43,6 @@ export function QuotePage() {
                       id="name"
                       name="name"
                       required
-                      value={formData.name}
-                      onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D32323]"
                     />
                   </div>
@@ -184,8 +54,6 @@ export function QuotePage() {
                       type="text"
                       id="company"
                       name="company"
-                      value={formData.company}
-                      onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D32323]"
                     />
                   </div>
@@ -198,8 +66,6 @@ export function QuotePage() {
                       id="email"
                       name="email"
                       required
-                      value={formData.email}
-                      onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D32323]"
                     />
                   </div>
@@ -212,8 +78,6 @@ export function QuotePage() {
                       id="phone"
                       name="phone"
                       required
-                      value={formData.phone}
-                      onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D32323]"
                     />
                   </div>
@@ -232,8 +96,6 @@ export function QuotePage() {
                       id="service"
                       name="service"
                       required
-                      value={formData.service}
-                      onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D32323]"
                     >
                       <option value="">Select a service</option>
@@ -255,8 +117,6 @@ export function QuotePage() {
                         name="pickupLocation"
                         required
                         placeholder="Suburb, postcode, or full address"
-                        value={formData.pickupLocation}
-                        onChange={handleChange}
                         className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D32323]"
                       />
                     </div>
@@ -270,8 +130,6 @@ export function QuotePage() {
                         name="deliveryLocation"
                         required
                         placeholder="Suburb, postcode, or full address"
-                        value={formData.deliveryLocation}
-                        onChange={handleChange}
                         className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D32323]"
                       />
                     </div>
@@ -293,8 +151,6 @@ export function QuotePage() {
                       required
                       rows={3}
                       placeholder="Brief description of goods being transported"
-                      value={formData.loadDescription}
-                      onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D32323]"
                     ></textarea>
                   </div>
@@ -308,8 +164,6 @@ export function QuotePage() {
                         id="weight"
                         name="weight"
                         placeholder="e.g., 500kg, 2 tonnes"
-                        value={formData.weight}
-                        onChange={handleChange}
                         className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D32323]"
                       />
                     </div>
@@ -322,8 +176,6 @@ export function QuotePage() {
                         id="dimensions"
                         name="dimensions"
                         placeholder="e.g., 2m x 1m x 1m"
-                        value={formData.dimensions}
-                        onChange={handleChange}
                         className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D32323]"
                       />
                     </div>
@@ -343,8 +195,6 @@ export function QuotePage() {
                       type="date"
                       id="preferredDate"
                       name="preferredDate"
-                      value={formData.preferredDate}
-                      onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D32323]"
                     />
                   </div>
@@ -357,8 +207,6 @@ export function QuotePage() {
                       name="additionalInfo"
                       rows={4}
                       placeholder="Any special requirements, access restrictions, or other relevant details..."
-                      value={formData.additionalInfo}
-                      onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D32323]"
                     ></textarea>
                   </div>
