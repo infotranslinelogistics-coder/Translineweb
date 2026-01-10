@@ -1,0 +1,20 @@
+diff a/tsconfig.json b/tsconfig.json	(rejected hunks)
+@@ -1,11 +1,17 @@
+ {
+   "extends": "expo/tsconfig.base",
+   "compilerOptions": {
+     "strict": true,
+     "jsx": "react-native",
+     "allowJs": true,
+     "noImplicitAny": false
+   },
+-  "include": ["App.tsx", "src/**/*"],
++  "include": [
++    "App.tsx",
++    "src/**/*",
++    "portal/pages/**/*",
++    "portal/lib/**/*",
++    "portal/components/Portal*.tsx"
++  ],
+   "exclude": ["node_modules", "screens", "components/ui"]
+ }
