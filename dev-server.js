@@ -12,21 +12,21 @@ const PORT = 5173;
 async function setupDevServer() {
   const app = express();
 
-  // Create Vite server instances for both apps
   let viteMain, vitePortal;
 
   try {
-    // Main Vite app server (root)
-    viteMain = await createServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-
-    // Portal Vite app server
+    // Portal Vite server - MUST create first with correct root
+    // root="portal" means Vite's "/" is /workspaces/Translineweb/portal/
     vitePortal = await createServer({
       server: { middlewareMode: true },
       appType: 'spa',
       root: path.resolve(__dirname, 'portal'),
+    });
+
+    // Main Vite server - root defaults to /workspaces/Translineweb/
+    viteMain = await createServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
     });
   } catch (error) {
     console.error('Failed to create Vite servers:', error);
@@ -34,37 +34,45 @@ async function setupDevServer() {
   }
 
   // === PORTAL APP (mounted at /portal) ===
-  // CRITICAL: Mount portal BEFORE main to ensure priority
-  
+  // 1. Mount portal middleware to handle static assets, modules, @vite/client
   app.use('/portal', vitePortal.middlewares);
 
-  // Portal catch-all for SPA navigation
-  app.get('/portal/*', async (req, res, next) => {
+  // 2. Portal SPA fallback - handle /portal/* routes
+  // This must come AFTER middleware so it only fires for non-existent files
+  app.get('/portal/*', async (req, res) => {
     try {
       const portalIndexPath = path.resolve(__dirname, 'portal/index.html');
       let html = fs.readFileSync(portalIndexPath, 'utf-8');
-      html = await vitePortal.transformIndexHtml(req.originalUrl, html);
+      
+      // Transform index.html: injects @vite/client, hot.accept, etc.
+      // req.url = "/portal/..." but transformIndexHtml expects relative path
+      html = await vitePortal.transformIndexHtml('/index.html', html);
+      
       res.setHeader('Content-Type', 'text/html');
       res.end(html);
     } catch (error) {
-      console.error('Portal error:', error);
+      console.error('Portal SPA fallback error:', error);
       res.status(500).send('Error loading portal');
     }
   });
 
   // === MAIN APP (root) ===
+  // 3. Mount main middleware to handle static assets, modules, @vite/client
   app.use(viteMain.middlewares);
 
-  // Main catch-all for SPA navigation
-  app.get('*', async (req, res, next) => {
+  // 4. Main SPA fallback - handle all other routes
+  app.get('*', async (req, res) => {
     try {
       const mainIndexPath = path.resolve(__dirname, 'index.html');
       let html = fs.readFileSync(mainIndexPath, 'utf-8');
+      
+      // Transform index.html
       html = await viteMain.transformIndexHtml(req.originalUrl, html);
+      
       res.setHeader('Content-Type', 'text/html');
       res.end(html);
     } catch (error) {
-      console.error('Main app error:', error);
+      console.error('Main SPA fallback error:', error);
       res.status(500).send('Error loading main site');
     }
   });
