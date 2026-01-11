@@ -11,14 +11,15 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(express.json());
-app.use(express.static('dist'));
 
-// Serve portal static files
-app.use('/portal', express.static('dist-portal'));
+// IMPORTANT: Portal MUST come BEFORE main site static files and catch-alls
 
-// Portal SPA: catch-all for /portal/* routes
+// Serve portal static assets
+app.use('/portal', express.static(path.join(__dirname, 'dist/portal')));
+
+// Portal SPA: catch-all for /portal/* routes (before main site handlers)
 app.get('/portal/*', (req, res) => {
-  const portalIndexPath = path.join(__dirname, 'dist-portal', 'index.html');
+  const portalIndexPath = path.join(__dirname, 'dist/portal', 'index.html');
   if (fs.existsSync(portalIndexPath)) {
     res.sendFile(portalIndexPath);
   } else {
@@ -26,7 +27,10 @@ app.get('/portal/*', (req, res) => {
   }
 });
 
-// Main SPA: catch-all for root routes
+// Serve main site static files
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// Main SPA: catch-all for all other routes
 app.get('*', (req, res) => {
   const mainIndexPath = path.join(__dirname, 'dist', 'index.html');
   if (fs.existsSync(mainIndexPath)) {

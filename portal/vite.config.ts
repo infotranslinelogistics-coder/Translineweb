@@ -1,15 +1,14 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
-// Portal application vite configuration
 export default defineConfig({
   plugins: [react()],
-  base: '/portal/',
-  build: {
-    outDir: '../dist/portal',
-    emptyOutDir: true,
-  },
+  base: "/portal/",
   server: {
     middlewareMode: true,
-  }
-})
+  },
+  build: {
+    outDir: "../dist/portal",
+    emptyOutDir: true,
+  },
+});
