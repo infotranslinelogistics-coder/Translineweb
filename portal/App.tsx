@@ -1,9 +1,12 @@
 // Temporary minimal App to test dev server setup
 // The full portal app code is in portal_extracted/ and needs to be migrated here
 
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export default function App() {
+  useEffect(() => {
+    console.log('Portal App mounted')
+  }, [])
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif', maxWidth: '600px', margin: '0 auto' }}>
       <div style={{ backgroundColor: '#f0f0f0', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>

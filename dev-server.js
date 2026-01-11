@@ -45,8 +45,8 @@ async function setupDevServer() {
       let html = fs.readFileSync(portalIndexPath, 'utf-8');
       
       // Transform index.html: injects @vite/client, hot.accept, etc.
-      // req.url = "/portal/..." but transformIndexHtml expects relative path
-      html = await vitePortal.transformIndexHtml('/index.html', html);
+      // Pass the original URL so Vite can rewrite module imports with the mount prefix (/portal)
+      html = await vitePortal.transformIndexHtml(req.originalUrl, html);
       
       res.setHeader('Content-Type', 'text/html');
       res.end(html);
