@@ -1,4 +1,5 @@
 node_modules/
 dist/
+dist-portal/
 .DS_Store
-
+*.zip

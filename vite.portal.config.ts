@@ -1,12 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vitejs.dev/config/
+// Portal app vite config - builds to /portal path
 export default defineConfig({
   plugins: [react()],
-  base: '/',
+  base: '/portal/',
   build: {
-    outDir: 'dist',
+    outDir: 'dist-portal',
     emptyOutDir: true,
   },
   server: {

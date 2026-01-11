@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Activity, AlertTriangle, Users, Truck, Camera, Shield, FileText, Menu } from 'lucide-react';
 import { projectId, publicAnonKey } from './utils/supabase/info';
 import { OverviewDashboard } from './components/OverviewDashboard';
@@ -9,11 +10,14 @@ import { DriversManagement } from './components/DriversManagement';
 import { VehiclesManagement } from './components/VehiclesManagement';
 import { OdometerReview } from './components/OdometerReview';
 import { AdminOverrides } from './components/AdminOverrides';
+import { Login } from './components/Login';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import { Button } from './components/ui/button';
 
 const API_BASE = `https://${projectId}.supabase.co/functions/v1/make-server-987e9da2`;
 
-export default function App() {
+function PortalLayout() {
+  const navigate = useNavigate();
   const [currentSection, setCurrentSection] = useState('overview');
   const [selectedShiftId, setSelectedShiftId] = useState<string | null>(null);
   const [stats, setStats] = useState<any>(null);
@@ -58,21 +62,23 @@ export default function App() {
   const handleViewShift = (shiftId: string) => {
     setSelectedShiftId(shiftId);
     setCurrentSection('shift-detail');
+    navigate(`/shift/${shiftId}`);
   };
 
   const handleBackToShifts = () => {
     setSelectedShiftId(null);
     setCurrentSection('shifts');
+    navigate('/shifts');
   };
 
   const navigation = [
-    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'shifts', label: 'Live Shifts', icon: Activity },
-    { id: 'events', label: 'Event Logs', icon: AlertTriangle },
-    { id: 'drivers', label: 'Drivers', icon: Users },
-    { id: 'vehicles', label: 'Vehicles', icon: Truck },
-    { id: 'odometer', label: 'Odometer Review', icon: Camera },
-    { id: 'admin', label: 'Admin Overrides', icon: Shield },
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard, path: '/' },
+    { id: 'shifts', label: 'Live Shifts', icon: Activity, path: '/shifts' },
+    { id: 'events', label: 'Event Logs', icon: AlertTriangle, path: '/events' },
+    { id: 'drivers', label: 'Drivers', icon: Users, path: '/drivers' },
+    { id: 'vehicles', label: 'Vehicles', icon: Truck, path: '/vehicles' },
+    { id: 'odometer', label: 'Odometer Review', icon: Camera, path: '/odometer' },
+    { id: 'admin', label: 'Admin Overrides', icon: Shield, path: '/admin' },
   ];
 
   return (
@@ -98,7 +104,10 @@ export default function App() {
             return (
               <button
                 key={item.id}
-                onClick={() => setCurrentSection(item.id)}
+                onClick={() => {
+                  setCurrentSection(item.id);
+                  navigate(item.path);
+                }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded text-sm font-medium transition-colors ${
                   isActive
                     ? 'bg-[#ff6b35] text-[#0a0a0b]'
@@ -175,18 +184,36 @@ export default function App() {
 
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto bg-background">
-          {currentSection === 'overview' && <OverviewDashboard onViewShift={handleViewShift} />}
-          {currentSection === 'shifts' && <LiveShiftsMonitor onViewShift={handleViewShift} />}
-          {currentSection === 'shift-detail' && selectedShiftId && (
-            <ShiftDetailView shiftId={selectedShiftId} onBack={handleBackToShifts} />
-          )}
-          {currentSection === 'events' && <EventLogs />}
-          {currentSection === 'drivers' && <DriversManagement />}
-          {currentSection === 'vehicles' && <VehiclesManagement />}
-          {currentSection === 'odometer' && <OdometerReview onViewShift={handleViewShift} />}
-          {currentSection === 'admin' && <AdminOverrides />}
+          <Routes>
+            <Route path="/" element={<OverviewDashboard onViewShift={handleViewShift} />} />
+            <Route path="/shifts" element={<LiveShiftsMonitor onViewShift={handleViewShift} />} />
+            <Route path="/shift/:shiftId" element={<ShiftDetailView shiftId={selectedShiftId || ''} onBack={handleBackToShifts} />} />
+            <Route path="/events" element={<EventLogs />} />
+            <Route path="/drivers" element={<DriversManagement />} />
+            <Route path="/vehicles" element={<VehiclesManagement />} />
+            <Route path="/odometer" element={<OdometerReview onViewShift={handleViewShift} />} />
+            <Route path="/admin" element={<AdminOverrides />} />
+          </Routes>
         </main>
       </div>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter basename="/portal">
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route 
+          path="/*" 
+          element={
+            <ProtectedRoute>
+              <PortalLayout />
+            </ProtectedRoute>
+          } 
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
