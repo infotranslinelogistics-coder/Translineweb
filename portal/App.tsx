@@ -1,64 +1,140 @@
-// Temporary minimal App to test dev server setup
-// The full portal app code is in portal_extracted/ and needs to be migrated here
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Menu, X, LogOut, Home, Activity, Users, Truck, FileText, Shield, Eye } from 'lucide-react';
 
-import React, { useEffect } from 'react';
+// Portal page components
+import OverviewDashboard from './src/components/OverviewDashboard';
+import LiveShiftsMonitor from './src/components/LiveShiftsMonitor';
+import DriversManagement from './src/components/DriversManagement';
+import VehiclesManagement from './src/components/VehiclesManagement';
+import EventLogs from './src/components/EventLogs';
+import AdminOverrides from './src/components/AdminOverrides';
+import ShiftDetailView from './src/components/ShiftDetailView';
+import OdometerReview from './src/components/OdometerReview';
 
-export default function App() {
-  useEffect(() => {
-    console.log('Portal App mounted')
-  }, [])
+interface NavItem {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  path: string;
+}
+
+const navItems: NavItem[] = [
+  { id: 'dashboard', label: 'Dashboard', icon: <Home className="w-5 h-5" />, path: '/' },
+  { id: 'live-shifts', label: 'Live Shifts', icon: <Activity className="w-5 h-5" />, path: '/live-shifts' },
+  { id: 'drivers', label: 'Drivers', icon: <Users className="w-5 h-5" />, path: '/drivers' },
+  { id: 'vehicles', label: 'Vehicles', icon: <Truck className="w-5 h-5" />, path: '/vehicles' },
+  { id: 'events', label: 'Events', icon: <FileText className="w-5 h-5" />, path: '/events' },
+  { id: 'odometer', label: 'Odometer', icon: <Eye className="w-5 h-5" />, path: '/odometer' },
+  { id: 'admin', label: 'Admin', icon: <Shield className="w-5 h-5" />, path: '/admin' },
+];
+
+function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const location = useLocation();
+
   return (
-    <div style={{ padding: '20px', fontFamily: 'sans-serif', maxWidth: '600px', margin: '0 auto' }}>
-      <div style={{ backgroundColor: '#f0f0f0', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
-        <h1 style={{ color: '#10b981', margin: '0 0 10px 0' }}>✅ Dev Server is Working!</h1>
-        <p style={{ margin: '0 0 10px 0' }}>
-          <strong>React mounted successfully at http://localhost:5173/portal/</strong>
-        </p>
-        <p style={{ margin: '0', color: '#666' }}>
-          The dev server setup is correct and can serve the portal app with proper HMR.
-        </p>
+    <>
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={onClose}
+        />
+      )}
+      
+      {/* Sidebar */}
+      <div
+        className={`fixed left-0 top-0 h-screen w-64 bg-card border-r border-border z-50 transform transition-transform duration-300 ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        } md:translate-x-0 md:static md:z-auto overflow-y-auto`}
+        style={{ backgroundColor: '#141416', borderColor: '#27272a' }}
+      >
+        <div className="p-6">
+          <h1 className="text-2xl font-bold text-primary mb-8">Transline Portal</h1>
+          
+          <nav className="space-y-2">
+            {navItems.map((item) => (
+              <Link
+                key={item.id}
+                to={item.path}
+                onClick={onClose}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                  location.pathname === item.path
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-foreground hover:bg-muted'
+                }`}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </Link>
+            ))}
+          </nav>
+
+          <div className="mt-8 pt-8 border-t border-border">
+            <button className="flex items-center gap-3 px-4 py-3 rounded-lg text-foreground hover:bg-muted w-full transition-colors">
+              <LogOut className="w-5 h-5" />
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
       </div>
-
-      <div style={{ backgroundColor: '#fff3cd', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
-        <h2 style={{ margin: '0 0 10px 0', color: '#856404' }}>Next Steps</h2>
-        <p style={{ margin: '0 0 10px 0' }}>
-          The portal app files in portal_extracted/ need to be integrated:
-        </p>
-        <ul style={{ margin: '0', paddingLeft: '20px', color: '#666' }}>
-          <li>Copy components from portal_extracted/components → portal/components/</li>
-          <li>Copy utils from portal_extracted/utils → portal/utils/</li>
-          <li>Copy ui components from portal_extracted/ui → portal/ui/</li>
-          <li>Update imports in portal/App.tsx to use correct paths</li>
-          <li>Ensure portal_extracted/info.tsx is available as utils/supabase/info</li>
-        </ul>
-      </div>
-
-      <div style={{ backgroundColor: '#d1ecf1', padding: '20px', borderRadius: '8px' }}>
-        <h2 style={{ margin: '0 0 10px 0', color: '#0c5460' }}>What Was Fixed</h2>
-        <ul style={{ margin: '0', paddingLeft: '20px', color: '#0c5460' }}>
-          <li>✅ Dev server now uses Express + Vite middleware (not proxy)</li>
-          <li>✅ Portal mounted at /portal with proper routing</li>
-          <li>✅ @vite/client HMR accessible at /portal/@vite/client</li>
-          <li>✅ Entry module resolves correctly at /portal/main.tsx</li>
-          <li>✅ index.html transformed with Vite HMR client injection</li>
-          <li>✅ SPA fallback serves index.html for /portal/* routes</li>
-          <li>✅ Dev base path set to "/" for development (production uses "/portal/")</li>
-        </ul>
-      </div>
-
-      <hr style={{ margin: '20px 0' }} />
-
-      <h2 style={{ color: '#666' }}>Testing</h2>
-      <pre style={{ backgroundColor: '#f5f5f5', padding: '10px', borderRadius: '4px', overflow: 'auto' }}>
-        {`curl -I http://localhost:5173/portal/
-# Should return 200 with HTML
-
-curl -I http://localhost:5173/portal/@vite/client
-# Should return 200 (HMR client)
-
-curl -I http://localhost:5173/portal/main.tsx
-# Should return 200 (entry module)`}
-      </pre>
-    </div>
+    </>
   );
 }
+
+function App() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedShift, setSelectedShift] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Close sidebar on route change
+    setSidebarOpen(false);
+  }, []);
+
+  return (
+    <Router basename="/portal">
+      <div 
+        className="flex h-screen bg-background text-foreground"
+        style={{
+          backgroundColor: '#0a0a0b',
+          color: '#e5e5e7'
+        }}
+      >
+        {/* Sidebar */}
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+        {/* Main content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Header */}
+          <div className="bg-card border-b border-border px-6 py-4 flex items-center justify-between md:justify-end">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="md:hidden text-foreground hover:bg-muted p-2 rounded-lg"
+            >
+              {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+            <div className="text-sm text-muted-foreground">
+              translinelogistics.org/portal
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-auto">
+            <Routes>
+              <Route path="/" element={<OverviewDashboard onViewShift={setSelectedShift} />} />
+              <Route path="/live-shifts" element={<LiveShiftsMonitor onViewShift={setSelectedShift} />} />
+              <Route path="/drivers" element={<DriversManagement />} />
+              <Route path="/vehicles" element={<VehiclesManagement />} />
+              <Route path="/events" element={<EventLogs />} />
+              <Route path="/odometer" element={<OdometerReview />} />
+              <Route path="/admin" element={<AdminOverrides />} />
+              <Route path="/shift/:shiftId" element={<ShiftDetailView shiftId={selectedShift} />} />
+            </Routes>
+          </div>
+        </div>
+      </div>
+    </Router>
+  );
+}
+
+export default App;
