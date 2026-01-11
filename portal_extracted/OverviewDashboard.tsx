@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { AlertTriangle, Activity, Users, Truck, Camera, XCircle, Clock } from 'lucide-react';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
 import { Card } from './ui/card';
+import { fetchDrivers as apiFetchDrivers, fetchVehicles as apiFetchVehicles } from '../utils/assignments';
 
 const API_BASE = `https://${projectId}.supabase.co/functions/v1/make-server-987e9da2`;
 
@@ -23,17 +24,31 @@ export function OverviewDashboard({ onViewShift }: OverviewDashboardProps) {
 
   const fetchData = async () => {
     try {
-      const [statsRes, activityRes, shiftsRes] = await Promise.all([
+      const [statsRes, activityRes, shiftsRes, drivers, vehicles] = await Promise.all([
         fetch(`${API_BASE}/stats`, { headers: { Authorization: `Bearer ${publicAnonKey}` } }),
         fetch(`${API_BASE}/activity`, { headers: { Authorization: `Bearer ${publicAnonKey}` } }),
         fetch(`${API_BASE}/shifts?status=active`, { headers: { Authorization: `Bearer ${publicAnonKey}` } }),
+        apiFetchDrivers(),
+        apiFetchVehicles(),
       ]);
 
       const statsData = await statsRes.json();
       const activityData = await activityRes.json();
       const shiftsData = await shiftsRes.json();
 
-      setStats(statsData);
+      // augment stats with driver/vehicle assignment info
+      const totalDrivers = Array.isArray(drivers) ? drivers.length : 0;
+      const totalVehicles = Array.isArray(vehicles) ? vehicles.length : 0;
+      const assignedVehicles = Array.isArray(vehicles) ? vehicles.filter(v => v.assigned_driver_id).length : 0;
+
+      setStats({
+        ...statsData,
+        totalDrivers,
+        totalVehicles,
+        assignedVehicles,
+        unassignedVehicles: totalVehicles - assignedVehicles,
+      });
+
       setActivities(activityData.activities || []);
       setShifts(shiftsData.shifts || []);
       setLoading(false);
@@ -75,8 +90,8 @@ export function OverviewDashboard({ onViewShift }: OverviewDashboardProps) {
         <Card className="bg-card border border-border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Active Drivers</p>
-              <p className="text-3xl font-bold text-[#1e90ff] mt-1">{stats?.activeDriversCount || 0}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">Total Drivers</p>
+              <p className="text-3xl font-bold text-[#1e90ff] mt-1">{stats?.totalDrivers ?? 0}</p>
             </div>
             <Users className="w-8 h-8 text-[#1e90ff] opacity-50" />
           </div>
@@ -85,8 +100,9 @@ export function OverviewDashboard({ onViewShift }: OverviewDashboardProps) {
         <Card className="bg-card border border-border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Vehicles in Use</p>
-              <p className="text-3xl font-bold text-[#10b981] mt-1">{stats?.vehiclesInUseCount || 0}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">Vehicles Assigned</p>
+              <p className="text-3xl font-bold text-[#10b981] mt-1">{stats?.assignedVehicles ?? 0}</p>
+              <p className="text-xs text-muted-foreground">Unassigned: {stats?.unassignedVehicles ?? 0}</p>
             </div>
             <Truck className="w-8 h-8 text-[#10b981] opacity-50" />
           </div>

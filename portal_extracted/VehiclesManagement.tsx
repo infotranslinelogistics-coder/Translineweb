@@ -5,11 +5,13 @@ import { Button } from './ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
 import { Input } from './ui/input';
+import { fetchDrivers as apiFetchDrivers, fetchVehicles as apiFetchVehicles, assignVehicleToDriver, unassignVehicle } from '../utils/assignments';
 
 const API_BASE = `https://${projectId}.supabase.co/functions/v1/make-server-987e9da2`;
 
 export function VehiclesManagement() {
   const [vehicles, setVehicles] = useState<any[]>([]);
+  const [drivers, setDrivers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [createDialog, setCreateDialog] = useState({
     open: false,
@@ -19,22 +21,27 @@ export function VehiclesManagement() {
     year: '',
   });
 
+  const [assignDialog, setAssignDialog] = useState({ open: false, vehicleId: '', driverId: '' });
+
   useEffect(() => {
-    fetchVehicles();
+    loadData();
   }, []);
 
-  const fetchVehicles = async () => {
+  const loadData = async () => {
+    setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/vehicles`, {
-        headers: { Authorization: `Bearer ${publicAnonKey}` },
-      });
-      const data = await response.json();
-      setVehicles(data.vehicles || []);
-      setLoading(false);
+      const [v, d] = await Promise.all([apiFetchVehicles(), apiFetchDrivers()]);
+      setVehicles(v);
+      setDrivers(d);
     } catch (error) {
-      console.error('Error fetching vehicles:', error);
+      console.error('Error fetching vehicles/drivers:', error);
+    } finally {
       setLoading(false);
     }
+  };
+
+  const fetchVehicles = async () => {
+    await loadData();
   };
 
   const handleCreateVehicle = async () => {
@@ -107,6 +114,48 @@ export function VehiclesManagement() {
     }
   };
 
+  const openAssignDialog = (vehicleId: string) => {
+    setAssignDialog({ open: true, vehicleId, driverId: '' });
+  };
+
+  const handleAssign = async () => {
+    if (!assignDialog.driverId) {
+      alert('Please select a driver');
+      return;
+    }
+    try {
+      const res = await assignVehicleToDriver(assignDialog.vehicleId, assignDialog.driverId);
+      if (res.ok) {
+        setAssignDialog({ open: false, vehicleId: '', driverId: '' });
+        await loadData();
+        alert('Vehicle assigned');
+      } else {
+        const err = await res.json();
+        alert(`Error: ${err.error || 'assignment failed'}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Assignment failed');
+    }
+  };
+
+  const handleUnassign = async (vehicleId: string) => {
+    if (!confirm('Unassign this vehicle?')) return;
+    try {
+      const res = await unassignVehicle(vehicleId);
+      if (res.ok) {
+        await loadData();
+        alert('Vehicle unassigned');
+      } else {
+        const err = await res.json();
+        alert(`Error: ${err.error || 'unassign failed'}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Unassign failed');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -137,6 +186,7 @@ export function VehiclesManagement() {
               <TableHead className="text-xs font-bold text-foreground uppercase">Make</TableHead>
               <TableHead className="text-xs font-bold text-foreground uppercase">Model</TableHead>
               <TableHead className="text-xs font-bold text-foreground uppercase">Year</TableHead>
+              <TableHead className="text-xs font-bold text-foreground uppercase">Assigned Driver</TableHead>
               <TableHead className="text-xs font-bold text-foreground uppercase">Maintenance</TableHead>
               <TableHead className="text-xs font-bold text-foreground uppercase">Created</TableHead>
               <TableHead className="text-xs font-bold text-foreground uppercase text-right">Actions</TableHead>
@@ -145,12 +195,14 @@ export function VehiclesManagement() {
           <TableBody>
             {vehicles.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                   No vehicles found
                 </TableCell>
               </TableRow>
             ) : (
-              vehicles.map((vehicle) => (
+              vehicles.map((vehicle) => {
+                const assigned = drivers.find(d => d.id === vehicle.assigned_driver_id);
+                return (
                 <TableRow key={vehicle.id} className="border-b border-border hover:bg-muted/20">
                   <TableCell>
                     {vehicle.status === 'active' ? (
@@ -176,6 +228,7 @@ export function VehiclesManagement() {
                   <TableCell className="text-sm text-muted-foreground">{vehicle.make || '-'}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{vehicle.model || '-'}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{vehicle.year || '-'}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{assigned ? assigned.name : '-'}</TableCell>
                   <TableCell>
                     {vehicle.maintenance_required ? (
                       <div className="flex items-center gap-2">
@@ -191,6 +244,12 @@ export function VehiclesManagement() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-2">
+                      {vehicle.assigned_driver_id ? (
+                        <Button size="sm" variant="outline" onClick={() => handleUnassign(vehicle.id)} className="text-xs">Unassign</Button>
+                      ) : (
+                        <Button size="sm" onClick={() => openAssignDialog(vehicle.id)} className="text-xs">Assign Driver</Button>
+                      )}
+
                       <Button
                         size="sm"
                         variant={vehicle.maintenance_required ? 'default' : 'outline'}
@@ -212,11 +271,39 @@ export function VehiclesManagement() {
                     </div>
                   </TableCell>
                 </TableRow>
-              ))
+                )
+              })
             )}
           </TableBody>
         </Table>
       </div>
+
+      {/* Assign Dialog */}
+      <Dialog open={assignDialog.open} onOpenChange={(open) => setAssignDialog({ ...assignDialog, open })}>
+        <DialogContent className="bg-card">
+          <DialogHeader>
+            <DialogTitle>Assign Driver</DialogTitle>
+            <DialogDescription>Select a driver to assign to this vehicle.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">Driver</label>
+              <select value={assignDialog.driverId} onChange={(e) => setAssignDialog({ ...assignDialog, driverId: e.target.value })} className="w-full p-2 rounded border">
+                <option value="">-- Select driver --</option>
+                {drivers.filter(d => d.status === 'active').map(d => (
+                  <option key={d.id} value={d.id}>{d.name} {d.email ? `- ${d.email}` : ''}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAssignDialog({ open: false, vehicleId: '', driverId: '' })}>
+              Cancel
+            </Button>
+            <Button onClick={handleAssign}>Assign</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Create Vehicle Dialog */}
       <Dialog open={createDialog.open} onOpenChange={(open) => setCreateDialog({ ...createDialog, open })}>
