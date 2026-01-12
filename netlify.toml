@@ -1,20 +1,19 @@
 [build]
-  command = "npm run build"
+  command = "npm install && npm run build && cd portal && npm install && npm run build"
   publish = "dist"
 
 [dev]
   command = "npm run dev"
 
+# Portal SPA routing - MUST come first
+[[redirects]]
+  from = "/portal/*"
+  to = "/portal/index.html"
+  status = 200
+  force = true
+
+# Main site SPA routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-[[redirects]]
-from = "/portal/*"
-to = "/index.html"
-status = 200
-
-[[redirects]]
-from = "/*"
-to = "/index.html"
-status = 200
