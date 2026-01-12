@@ -35,13 +35,7 @@ class ErrorBoundary extends Component<Props, State> {
   render(): ReactNode {
     if (this.state.hasError) {
       return (
-        <div 
-          className="flex items-center justify-center h-screen bg-background text-foreground"
-          style={{
-            backgroundColor: '#0a0a0b',
-            color: '#e5e5e7'
-          }}
-        >
+        <div className="flex items-center justify-center h-screen bg-background text-foreground">
           <div className="max-w-2xl p-8 bg-card border border-border rounded-lg">
             <h1 className="text-2xl font-bold text-destructive mb-4">
               Something went wrong
