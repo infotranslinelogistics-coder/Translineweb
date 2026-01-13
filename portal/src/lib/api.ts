@@ -2,38 +2,52 @@ import { supabase } from './supabase-client';
 
 // Fetch dashboard stats
 export async function fetchDashboardStats() {
-  const { data: shifts } = await supabase
-    .from('shifts')
-    .select('*')
-    .eq('status', 'active');
-  
-  const { data: drivers } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('role', 'driver');
-  
-  const { data: vehicles } = await supabase
-    .from('vehicles')
-    .select('*');
-  
-  const { data: failedEvents } = await supabase
-    .from('events')
-    .select('*')
-    .eq('status', 'failed');
+  try {
+    const { data: shifts, error: shiftsError } = await supabase
+      .from('shifts')
+      .select('*')
+      .eq('status', 'active');
+    
+    if (shiftsError) throw shiftsError;
+    
+    const { data: drivers, error: driversError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('role', 'driver')
+      .eq('status', 'active');
+    
+    if (driversError) throw driversError;
+    
+    const { data: vehicles, error: vehiclesError } = await supabase
+      .from('vehicles')
+      .select('*');
+    
+    if (vehiclesError) throw vehiclesError;
+    
+    const { data: failedEvents, error: eventsError } = await supabase
+      .from('events')
+      .select('*')
+      .eq('status', 'failed');
 
-  return {
-    activeShiftsCount: shifts?.length || 0,
-    activeDriversCount: drivers?.length || 0,
-    vehiclesInUseCount: vehicles?.filter(v => v.assigned_driver_id).length || 0,
-    alerts: {
-      stuckShifts: shifts?.filter(s => {
-        const duration = Date.now() - new Date(s.started_at).getTime();
-        return duration > 12 * 60 * 60 * 1000;
-      }).length || 0,
-      missingOdometer: shifts?.filter(s => !s.odometer_photo_url).length || 0,
-      failedEvents: failedEvents?.length || 0,
-    },
-  };
+    if (eventsError) throw eventsError;
+
+    return {
+      activeShiftsCount: shifts?.length || 0,
+      activeDriversCount: drivers?.length || 0,
+      vehiclesInUseCount: vehicles?.filter(v => v.assigned_driver_id).length || 0,
+      alerts: {
+        stuckShifts: shifts?.filter(s => {
+          const duration = Date.now() - new Date(s.started_at).getTime();
+          return duration > 12 * 60 * 60 * 1000;
+        }).length || 0,
+        missingOdometer: shifts?.filter(s => !s.odometer_photo_url).length || 0,
+        failedEvents: failedEvents?.length || 0,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching dashboard stats:', error);
+    throw error;
+  }
 }
 
 // Fetch active shifts
@@ -75,20 +89,26 @@ export async function fetchShiftDetails(shiftId: string) {
   if (eventsError) throw eventsError;
 
   // Fetch related data
-  const { data: fuelLogs } = await supabase
+  const { data: fuelLogs, error: fuelLogsError } = await supabase
     .from('fuel_logs')
     .select('*')
     .eq('shift_id', shiftId);
 
-  const { data: incidents } = await supabase
+  if (fuelLogsError) throw fuelLogsError;
+
+  const { data: incidents, error: incidentsError } = await supabase
     .from('incidents')
     .select('*')
     .eq('shift_id', shiftId);
 
-  const { data: notes } = await supabase
+  if (incidentsError) throw incidentsError;
+
+  const { data: notes, error: notesError } = await supabase
     .from('notes')
     .select('*')
     .eq('shift_id', shiftId);
+
+  if (notesError) throw notesError;
 
   return {
     shift,
@@ -137,12 +157,17 @@ export async function forceEndShift(shiftId: string, reason: string, adminName: 
   if (error) throw error;
 
   // Log admin action as event
-  await supabase.from('events').insert({
+  const { error: eventError } = await supabase.from('events').insert({
     shift_id: shiftId,
     event_type: 'admin_force_end',
     occurred_at: new Date().toISOString(),
     metadata: { reason, admin_name: adminName },
   });
+
+  if (eventError) {
+    console.error('Failed to log admin action event:', eventError);
+    // Don't throw here as the shift was already ended successfully
+  }
 }
 
 // Get odometer photo URL
