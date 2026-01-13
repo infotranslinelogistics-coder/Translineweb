@@ -5,15 +5,17 @@
 [dev]
   command = "npm run dev"
 
-# Portal SPA routing - MUST come first
+# Portal SPA routing
+# Note: force = false allows static files to be served first
 [[redirects]]
   from = "/portal/*"
   to = "/portal/index.html"
   status = 200
-  force = true
+  force = false
 
 # Main site SPA routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  force = false
