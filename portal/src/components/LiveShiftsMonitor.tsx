@@ -80,6 +80,22 @@ export default function LiveShiftsMonitor({ onViewShift }: LiveShiftsMonitorProp
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        alert('File size exceeds 5MB limit. Please select a smaller file.');
+        event.target.value = ''; // Clear the input
+        return;
+      }
+
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Invalid file type. Only JPEG, PNG, and WebP images are allowed.');
+        event.target.value = ''; // Clear the input
+        return;
+      }
+
       setUploadDialog({ ...uploadDialog, file });
     }
   };

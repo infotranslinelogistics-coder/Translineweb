@@ -236,8 +236,20 @@ export async function fetchAdminActions(limit: number = 50) {
 // Upload odometer photo
 export async function uploadOdometerPhoto(file: File, shiftId: string): Promise<string> {
   try {
-    // Generate unique filename
-    const fileExt = file.name.split('.').pop();
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error('Invalid file type. Only JPEG, PNG, and WebP images are allowed.');
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      throw new Error('File size exceeds 5MB limit.');
+    }
+
+    // Generate unique filename with validated extension
+    const fileExt = file.type.split('/')[1]; // Get extension from MIME type
     const fileName = `${shiftId}-${Date.now()}.${fileExt}`;
     const filePath = `${fileName}`;
 

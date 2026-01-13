@@ -217,7 +217,15 @@ export default function AdminOverrides() {
                       {action.reason || '-'}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground max-w-xs truncate">
-                      {action.metadata ? JSON.stringify(action.metadata).substring(0, 50) + '...' : '-'}
+                      {action.metadata ? (
+                        <span className="text-xs text-muted-foreground">
+                          {typeof action.metadata === 'object' 
+                            ? Object.keys(action.metadata).join(', ')
+                            : 'View details'}
+                        </span>
+                      ) : (
+                        '-'
+                      )}
                     </TableCell>
                   </TableRow>
                 ))
