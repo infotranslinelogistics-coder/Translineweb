@@ -15,6 +15,7 @@ export default function DriversManagement() {
     name: '',
     email: '',
     phone: '',
+    password: '',
   });
 
   useEffect(() => {
@@ -38,22 +39,54 @@ export default function DriversManagement() {
       return;
     }
 
+    if (!createDialog.email.trim()) {
+      alert('Please enter a driver email');
+      return;
+    }
+
+    if (!createDialog.password.trim() || createDialog.password.length < 6) {
+      alert('Please enter a password (minimum 6 characters)');
+      return;
+    }
+
     try {
-      const { error } = await supabase.from('profiles').insert({
+      // Create Supabase Auth user account
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: createDialog.email,
+        password: createDialog.password,
+        options: {
+          data: {
+            full_name: createDialog.name,
+            phone: createDialog.phone,
+            role: 'driver',
+          },
+        },
+      });
+
+      if (authError) throw authError;
+
+      if (!authData.user) {
+        throw new Error('Failed to create user account');
+      }
+
+      // Insert or update the profile with driver role
+      const { error: profileError } = await supabase.from('profiles').upsert({
+        id: authData.user.id,
         full_name: createDialog.name,
         email: createDialog.email,
         phone: createDialog.phone,
         role: 'driver',
+        status: 'active',
       });
 
-      if (error) throw error;
+      if (profileError) throw profileError;
 
-      setCreateDialog({ open: false, name: '', email: '', phone: '' });
+      setCreateDialog({ open: false, name: '', email: '', phone: '', password: '' });
       fetchDriversData();
-      alert('Driver created successfully');
-    } catch (error) {
+      alert('Driver created successfully! They can now log in to the mobile app with their email and password.');
+    } catch (error: any) {
       console.error('Error creating driver:', error);
-      alert('Failed to create driver');
+      alert(`Failed to create driver: ${error.message || 'Unknown error'}`);
     }
   };
 
@@ -95,7 +128,7 @@ export default function DriversManagement() {
           <h2 className="text-2xl font-bold text-foreground">Drivers Management</h2>
           <p className="text-sm text-muted-foreground mt-1">Manage driver accounts and permissions</p>
         </div>
-        <Button onClick={() => setCreateDialog({ open: true, name: '', email: '', phone: '' })}>
+        <Button onClick={() => setCreateDialog({ open: true, name: '', email: '', phone: '', password: '' })}>
           <Users className="w-4 h-4 mr-2" />
           Add Driver
         </Button>
@@ -181,7 +214,7 @@ export default function DriversManagement() {
           <DialogHeader>
             <DialogTitle>Add New Driver</DialogTitle>
             <DialogDescription>
-              Create a new driver account. The driver will be able to log in and manage shifts.
+              Create a new driver account with login credentials for the mobile app. The driver will be able to log in using their email and password.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -194,12 +227,21 @@ export default function DriversManagement() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">Email</label>
+              <label className="text-sm font-medium text-foreground mb-2 block">Email (Required)</label>
               <Input
                 type="email"
                 placeholder="john@example.com"
                 value={createDialog.email}
                 onChange={(e) => setCreateDialog({ ...createDialog, email: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">Password (Required, min 6 characters)</label>
+              <Input
+                type="password"
+                placeholder="Enter password for mobile app login"
+                value={createDialog.password}
+                onChange={(e) => setCreateDialog({ ...createDialog, password: e.target.value })}
               />
             </div>
             <div>
@@ -212,7 +254,7 @@ export default function DriversManagement() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateDialog({ open: false, name: '', email: '', phone: '' })}>
+            <Button variant="outline" onClick={() => setCreateDialog({ open: false, name: '', email: '', phone: '', password: '' })}>
               Cancel
             </Button>
             <Button onClick={handleCreateDriver}>Create Driver</Button>
