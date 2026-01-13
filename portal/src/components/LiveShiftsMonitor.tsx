@@ -1,13 +1,11 @@
-import { useState, useEffect } from 'react';
-import { Eye, AlertCircle, CheckCircle, Camera } from 'lucide-react';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { useState, useEffect, useRef } from 'react';
+import { Eye, AlertCircle, CheckCircle, Camera, Upload } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Textarea } from '../ui/textarea';
 import { Input } from '../ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
-
-const API_BASE = `https://${projectId}.supabase.co/functions/v1/make-server-987e9da2`;
+import { fetchActiveShifts, forceEndShift, uploadOdometerPhoto } from '../lib/api';
 
 interface LiveShiftsMonitorProps {
   onViewShift: (shiftId: string) => void;
@@ -21,11 +19,12 @@ export default function LiveShiftsMonitor({ onViewShift }: LiveShiftsMonitorProp
     shiftId: null,
     reason: '',
   });
-  const [uploadDialog, setUploadDialog] = useState<{ open: boolean; shiftId: string | null; photoUrl: string }>({
+  const [uploadDialog, setUploadDialog] = useState<{ open: boolean; shiftId: string | null; file: File | null }>({
     open: false,
     shiftId: null,
-    photoUrl: '',
+    file: null,
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchShifts();
@@ -35,11 +34,8 @@ export default function LiveShiftsMonitor({ onViewShift }: LiveShiftsMonitorProp
 
   const fetchShifts = async () => {
     try {
-      const response = await fetch(`${API_BASE}/shifts?status=active`, {
-        headers: { Authorization: `Bearer ${publicAnonKey}` },
-      });
-      const data = await response.json();
-      setShifts(data.shifts || []);
+      const data = await fetchActiveShifts();
+      setShifts(data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching shifts:', error);
@@ -54,26 +50,10 @@ export default function LiveShiftsMonitor({ onViewShift }: LiveShiftsMonitorProp
     }
 
     try {
-      const response = await fetch(`${API_BASE}/shifts/${forceEndDialog.shiftId}/force-end`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${publicAnonKey}`,
-        },
-        body: JSON.stringify({
-          reason: forceEndDialog.reason,
-          admin_name: 'Admin User',
-        }),
-      });
-
-      if (response.ok) {
-        setForceEndDialog({ open: false, shiftId: null, reason: '' });
-        fetchShifts();
-        alert('Shift force-ended successfully');
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.error}`);
-      }
+      await forceEndShift(forceEndDialog.shiftId, forceEndDialog.reason, 'Admin User');
+      setForceEndDialog({ open: false, shiftId: null, reason: '' });
+      fetchShifts();
+      alert('Shift force-ended successfully');
     } catch (error) {
       console.error('Error force-ending shift:', error);
       alert('Failed to force-end shift');
@@ -81,45 +61,51 @@ export default function LiveShiftsMonitor({ onViewShift }: LiveShiftsMonitorProp
   };
 
   const handleUploadOdometer = async () => {
-    if (!uploadDialog.shiftId || !uploadDialog.photoUrl.trim()) {
-      alert('Please provide a photo URL');
+    if (!uploadDialog.shiftId || !uploadDialog.file) {
+      alert('Please select a file to upload');
       return;
     }
 
     try {
-      const response = await fetch(`${API_BASE}/shifts/${uploadDialog.shiftId}/upload-odometer`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${publicAnonKey}`,
-        },
-        body: JSON.stringify({
-          photo_url: uploadDialog.photoUrl,
-          type: 'start',
-          admin_name: 'Admin User',
-        }),
-      });
-
-      if (response.ok) {
-        setUploadDialog({ open: false, shiftId: null, photoUrl: '' });
-        fetchShifts();
-        alert('Odometer photo uploaded successfully');
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.error}`);
-      }
+      await uploadOdometerPhoto(uploadDialog.file, uploadDialog.shiftId);
+      setUploadDialog({ open: false, shiftId: null, file: null });
+      fetchShifts();
+      alert('Odometer photo uploaded successfully');
     } catch (error) {
       console.error('Error uploading odometer:', error);
       alert('Failed to upload odometer photo');
     }
   };
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        alert('File size exceeds 5MB limit. Please select a smaller file.');
+        event.target.value = ''; // Clear the input
+        return;
+      }
+
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Invalid file type. Only JPEG, PNG, and WebP images are allowed.');
+        event.target.value = ''; // Clear the input
+        return;
+      }
+
+      setUploadDialog({ ...uploadDialog, file });
+    }
+  };
+
   const getShiftStatus = (shift: any) => {
-    const duration = Date.now() - new Date(shift.start_time).getTime();
+    const duration = Date.now() - new Date(shift.started_at).getTime();
     const hours = duration / (1000 * 60 * 60);
 
     if (hours > 12) return 'error';
-    if (!shift.start_odometer_photo) return 'warning';
+    if (!shift.odometer_photo_url) return 'warning';
     return 'ok';
   };
 
@@ -190,14 +176,14 @@ export default function LiveShiftsMonitor({ onViewShift }: LiveShiftsMonitorProp
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="text-sm font-medium text-foreground">{shift.driver_id}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{shift.vehicle_id}</TableCell>
+                    <TableCell className="text-sm font-medium text-foreground">{shift.driver?.full_name || 'Unknown'}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{shift.vehicle?.registration || 'Unknown'}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(shift.start_time).toLocaleString()}
+                      {new Date(shift.started_at).toLocaleString()}
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{getDurationString(shift.start_time)}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{getDurationString(shift.started_at)}</TableCell>
                     <TableCell>
-                      {shift.start_odometer_photo ? (
+                      {shift.odometer_photo_url ? (
                         <CheckCircle className="w-4 h-4 text-[#10b981]" />
                       ) : (
                         <Camera className="w-4 h-4 text-[#f59e0b]" />
@@ -214,11 +200,11 @@ export default function LiveShiftsMonitor({ onViewShift }: LiveShiftsMonitorProp
                           <Eye className="w-3 h-3 mr-1" />
                           View
                         </Button>
-                        {!shift.start_odometer_photo && (
+                        {!shift.odometer_photo_url && (
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => setUploadDialog({ open: true, shiftId: shift.id, photoUrl: '' })}
+                            onClick={() => setUploadDialog({ open: true, shiftId: shift.id, file: null })}
                             className="text-xs border-[#f59e0b] text-[#f59e0b] hover:bg-[#f59e0b]/10"
                           >
                             <Camera className="w-3 h-3 mr-1" />
@@ -279,22 +265,36 @@ export default function LiveShiftsMonitor({ onViewShift }: LiveShiftsMonitorProp
           <DialogHeader>
             <DialogTitle>Upload Start Odometer Photo</DialogTitle>
             <DialogDescription>
-              Provide a URL to the odometer photo. This will be attached to the shift.
+              Select an odometer photo file to upload. This will be attached to the shift.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <label className="text-sm font-medium text-foreground mb-2 block">Photo URL</label>
-            <Input
-              placeholder="https://example.com/photo.jpg"
-              value={uploadDialog.photoUrl}
-              onChange={(e) => setUploadDialog({ ...uploadDialog, photoUrl: e.target.value })}
+            <label className="text-sm font-medium text-foreground mb-2 block">Select Photo File</label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="block w-full text-sm text-foreground
+                file:mr-4 file:py-2 file:px-4
+                file:rounded file:border-0
+                file:text-sm file:font-semibold
+                file:bg-primary file:text-primary-foreground
+                hover:file:bg-primary/90
+                cursor-pointer"
             />
+            {uploadDialog.file && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Selected: {uploadDialog.file.name} ({(uploadDialog.file.size / 1024).toFixed(1)} KB)
+              </p>
+            )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setUploadDialog({ open: false, shiftId: null, photoUrl: '' })}>
+            <Button variant="outline" onClick={() => setUploadDialog({ open: false, shiftId: null, file: null })}>
               Cancel
             </Button>
-            <Button onClick={handleUploadOdometer}>
+            <Button onClick={handleUploadOdometer} disabled={!uploadDialog.file}>
+              <Upload className="w-4 h-4 mr-2" />
               Upload Photo
             </Button>
           </DialogFooter>

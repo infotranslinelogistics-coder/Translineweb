@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Users, CheckCircle, XCircle, Lock, Unlock } from 'lucide-react';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
 import { Button } from '../ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Input } from '../ui/input';
-
-const API_BASE = `https://${projectId}.supabase.co/functions/v1/make-server-987e9da2`;
+import { fetchDrivers, logAdminAction } from '../lib/api';
+import { supabase } from '../lib/supabase-client';
 
 export default function DriversManagement() {
   const [drivers, setDrivers] = useState<any[]>([]);
@@ -16,19 +15,17 @@ export default function DriversManagement() {
     name: '',
     email: '',
     phone: '',
+    password: '',
   });
 
   useEffect(() => {
-    fetchDrivers();
+    fetchDriversData();
   }, []);
 
-  const fetchDrivers = async () => {
+  const fetchDriversData = async () => {
     try {
-      const response = await fetch(`${API_BASE}/drivers`, {
-        headers: { Authorization: `Bearer ${publicAnonKey}` },
-      });
-      const data = await response.json();
-      setDrivers(data.drivers || []);
+      const data = await fetchDrivers();
+      setDrivers(data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching drivers:', error);
@@ -42,32 +39,63 @@ export default function DriversManagement() {
       return;
     }
 
+    if (!createDialog.email.trim()) {
+      alert('Please enter a driver email');
+      return;
+    }
+
+    if (!createDialog.password.trim() || createDialog.password.length < 6) {
+      alert('Please enter a password (minimum 6 characters)');
+      return;
+    }
+
     try {
-      const response = await fetch(`${API_BASE}/drivers`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${publicAnonKey}`,
+      // Create Supabase Auth user account
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: createDialog.email,
+        password: createDialog.password,
+        options: {
+          data: {
+            full_name: createDialog.name,
+            phone: createDialog.phone,
+            role: 'driver',
+          },
         },
-        body: JSON.stringify({
-          name: createDialog.name,
-          email: createDialog.email,
-          phone: createDialog.phone,
-          admin_name: 'Admin User',
-        }),
       });
 
-      if (response.ok) {
-        setCreateDialog({ open: false, name: '', email: '', phone: '' });
-        fetchDrivers();
-        alert('Driver created successfully');
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.error}`);
+      if (authError) throw authError;
+
+      if (!authData.user) {
+        throw new Error('Failed to create user account');
       }
-    } catch (error) {
+
+      // Insert or update the profile with driver role
+      const { error: profileError } = await supabase.from('profiles').upsert({
+        id: authData.user.id,
+        full_name: createDialog.name,
+        email: createDialog.email,
+        phone: createDialog.phone,
+        role: 'driver',
+        status: 'active',
+      });
+
+      if (profileError) throw profileError;
+
+      // Log admin action
+      await logAdminAction(
+        'create_driver',
+        authData.user.id,
+        'driver',
+        `Created driver account for ${createDialog.name}`,
+        { email: createDialog.email, phone: createDialog.phone }
+      );
+
+      setCreateDialog({ open: false, name: '', email: '', phone: '', password: '' });
+      fetchDriversData();
+      alert('Driver created successfully! They can now log in to the mobile app with their email and password.');
+    } catch (error: any) {
       console.error('Error creating driver:', error);
-      alert('Failed to create driver');
+      alert(`Failed to create driver: ${error.message || 'Unknown error'}`);
     }
   };
 
@@ -79,25 +107,24 @@ export default function DriversManagement() {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/drivers/${driverId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${publicAnonKey}`,
-        },
-        body: JSON.stringify({
-          status: newStatus,
-          admin_name: 'Admin User',
-        }),
-      });
+      const { error } = await supabase
+        .from('profiles')
+        .update({ status: newStatus })
+        .eq('id', driverId);
 
-      if (response.ok) {
-        fetchDrivers();
-        alert(`Driver ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully`);
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.error}`);
-      }
+      if (error) throw error;
+
+      // Log admin action
+      await logAdminAction(
+        newStatus === 'active' ? 'activate_driver' : 'deactivate_driver',
+        driverId,
+        'driver',
+        `Driver ${newStatus === 'active' ? 'activated' : 'deactivated'}`,
+        null
+      );
+
+      fetchDriversData();
+      alert(`Driver ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully`);
     } catch (error) {
       console.error('Error updating driver:', error);
       alert('Failed to update driver status');
@@ -119,7 +146,7 @@ export default function DriversManagement() {
           <h2 className="text-2xl font-bold text-foreground">Drivers Management</h2>
           <p className="text-sm text-muted-foreground mt-1">Manage driver accounts and permissions</p>
         </div>
-        <Button onClick={() => setCreateDialog({ open: true, name: '', email: '', phone: '' })}>
+        <Button onClick={() => setCreateDialog({ open: true, name: '', email: '', phone: '', password: '' })}>
           <Users className="w-4 h-4 mr-2" />
           Add Driver
         </Button>
@@ -161,7 +188,7 @@ export default function DriversManagement() {
                       </div>
                     )}
                   </TableCell>
-                  <TableCell className="text-sm font-medium text-foreground">{driver.name}</TableCell>
+                  <TableCell className="text-sm font-medium text-foreground">{driver.full_name}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{driver.email || '-'}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{driver.phone || '-'}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
@@ -205,7 +232,7 @@ export default function DriversManagement() {
           <DialogHeader>
             <DialogTitle>Add New Driver</DialogTitle>
             <DialogDescription>
-              Create a new driver account. The driver will be able to log in and manage shifts.
+              Create a new driver account with login credentials for the mobile app. The driver will be able to log in using their email and password.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -218,12 +245,21 @@ export default function DriversManagement() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">Email</label>
+              <label className="text-sm font-medium text-foreground mb-2 block">Email (Required)</label>
               <Input
                 type="email"
                 placeholder="john@example.com"
                 value={createDialog.email}
                 onChange={(e) => setCreateDialog({ ...createDialog, email: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">Password (Required, min 6 characters)</label>
+              <Input
+                type="password"
+                placeholder="Enter password for mobile app login"
+                value={createDialog.password}
+                onChange={(e) => setCreateDialog({ ...createDialog, password: e.target.value })}
               />
             </div>
             <div>
@@ -236,7 +272,7 @@ export default function DriversManagement() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateDialog({ open: false, name: '', email: '', phone: '' })}>
+            <Button variant="outline" onClick={() => setCreateDialog({ open: false, name: '', email: '', phone: '', password: '' })}>
               Cancel
             </Button>
             <Button onClick={handleCreateDriver}>Create Driver</Button>
