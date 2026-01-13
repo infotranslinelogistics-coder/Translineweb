@@ -10,4 +10,5 @@ export default defineConfig({
     outDir: path.resolve(__dirname, "../dist/portal"),
     emptyOutDir: true,
   },
+  publicDir: path.resolve(__dirname, "public"),
 });
