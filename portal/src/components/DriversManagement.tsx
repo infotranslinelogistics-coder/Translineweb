@@ -4,7 +4,7 @@ import { Button } from '../ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Input } from '../ui/input';
-import { fetchDrivers } from '../lib/api';
+import { fetchDrivers, logAdminAction } from '../lib/api';
 import { supabase } from '../lib/supabase-client';
 
 export default function DriversManagement() {
@@ -81,6 +81,15 @@ export default function DriversManagement() {
 
       if (profileError) throw profileError;
 
+      // Log admin action
+      await logAdminAction(
+        'create_driver',
+        authData.user.id,
+        'driver',
+        `Created driver account for ${createDialog.name}`,
+        { email: createDialog.email, phone: createDialog.phone }
+      );
+
       setCreateDialog({ open: false, name: '', email: '', phone: '', password: '' });
       fetchDriversData();
       alert('Driver created successfully! They can now log in to the mobile app with their email and password.');
@@ -104,6 +113,15 @@ export default function DriversManagement() {
         .eq('id', driverId);
 
       if (error) throw error;
+
+      // Log admin action
+      await logAdminAction(
+        newStatus === 'active' ? 'activate_driver' : 'deactivate_driver',
+        driverId,
+        'driver',
+        `Driver ${newStatus === 'active' ? 'activated' : 'deactivated'}`,
+        null
+      );
 
       fetchDriversData();
       alert(`Driver ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully`);

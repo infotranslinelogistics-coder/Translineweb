@@ -4,7 +4,7 @@ import { Button } from '../ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Input } from '../ui/input';
-import { fetchVehicles } from '../lib/api';
+import { fetchVehicles, logAdminAction } from '../lib/api';
 import { supabase } from '../lib/supabase-client';
 
 export default function VehiclesManagement() {
@@ -40,14 +40,23 @@ export default function VehiclesManagement() {
     }
 
     try {
-      const { error } = await supabase.from('vehicles').insert({
+      const { data, error } = await supabase.from('vehicles').insert({
         registration: createDialog.license_plate,
         make: createDialog.make,
         model: createDialog.model,
         year: createDialog.year ? parseInt(createDialog.year) : null,
-      });
+      }).select().single();
 
       if (error) throw error;
+
+      // Log admin action
+      await logAdminAction(
+        'create_vehicle',
+        data?.id || null,
+        'vehicle',
+        `Created vehicle ${createDialog.license_plate}`,
+        { registration: createDialog.license_plate, make: createDialog.make, model: createDialog.model, year: createDialog.year }
+      );
 
       setCreateDialog({ open: false, license_plate: '', make: '', model: '', year: '' });
       fetchVehiclesData();
@@ -75,6 +84,15 @@ export default function VehiclesManagement() {
         .eq('id', vehicleId);
 
       if (error) throw error;
+
+      // Log admin action
+      await logAdminAction(
+        'update_vehicle',
+        vehicleId,
+        'vehicle',
+        `${newStatus ? 'Flagged vehicle for maintenance' : 'Cleared maintenance flag'}`,
+        { maintenance_required: newStatus }
+      );
 
       fetchVehiclesData();
       alert(`Vehicle maintenance flag ${newStatus ? 'set' : 'cleared'} successfully`);

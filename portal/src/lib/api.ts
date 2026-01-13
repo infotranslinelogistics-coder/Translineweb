@@ -168,6 +168,9 @@ export async function forceEndShift(shiftId: string, reason: string, adminName: 
     console.error('Failed to log admin action event:', eventError);
     // Don't throw here as the shift was already ended successfully
   }
+
+  // Log to admin_actions table
+  await logAdminAction('force_end_shift', shiftId, 'shift', reason, { admin_name: adminName });
 }
 
 // Get odometer photo URL
@@ -177,4 +180,100 @@ export async function getOdometerPhotoUrl(path: string) {
     .getPublicUrl(path);
   
   return data.publicUrl;
+}
+
+// Log admin action
+export async function logAdminAction(
+  actionType: string,
+  targetId: string | null,
+  targetType: string | null,
+  reason: string | null,
+  metadata: any = null
+) {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      throw new Error('No authenticated user');
+    }
+
+    // Get admin profile
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', user.id)
+      .single();
+
+    const { error } = await supabase.from('admin_actions').insert({
+      admin_id: user.id,
+      admin_name: profile?.full_name || user.email || 'Unknown Admin',
+      action_type: actionType,
+      target_id: targetId,
+      target_type: targetType,
+      reason: reason,
+      metadata: metadata,
+    });
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('Failed to log admin action:', error);
+    // Don't throw - logging should not break the main action
+  }
+}
+
+// Fetch admin actions/audit log
+export async function fetchAdminActions(limit: number = 50) {
+  const { data, error } = await supabase
+    .from('admin_actions')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return data || [];
+}
+
+// Upload odometer photo
+export async function uploadOdometerPhoto(file: File, shiftId: string): Promise<string> {
+  try {
+    // Generate unique filename
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${shiftId}-${Date.now()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    // Upload to storage
+    const { error: uploadError } = await supabase.storage
+      .from('odometer-photos')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (uploadError) throw uploadError;
+
+    // Update shift record
+    const { error: updateError } = await supabase
+      .from('shifts')
+      .update({ odometer_photo_url: filePath })
+      .eq('id', shiftId);
+
+    if (updateError) throw updateError;
+
+    // Create event entry
+    await supabase.from('events').insert({
+      shift_id: shiftId,
+      event_type: 'admin_odometer_upload',
+      occurred_at: new Date().toISOString(),
+      status: 'success',
+      metadata: { file_path: filePath },
+    });
+
+    // Log admin action
+    await logAdminAction('upload_odometer', shiftId, 'shift', 'Admin uploaded odometer photo', { file_path: filePath });
+
+    return filePath;
+  } catch (error) {
+    console.error('Error uploading odometer photo:', error);
+    throw error;
+  }
 }

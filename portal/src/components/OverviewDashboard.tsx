@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AlertTriangle, Activity, Users, Truck, Camera, XCircle, Clock } from 'lucide-react';
 import { Card } from '../ui/card';
-import { fetchDashboardStats, fetchActiveShifts } from '../lib/api';
+import { fetchDashboardStats, fetchActiveShifts, fetchAdminActions } from '../lib/api';
 
 interface OverviewDashboardProps {
   onViewShift: (shiftId: string) => void;
@@ -21,13 +21,14 @@ export default function OverviewDashboard({ onViewShift }: OverviewDashboardProp
 
   const fetchData = async () => {
     try {
-      const [statsData, shiftsData] = await Promise.all([
+      const [statsData, shiftsData, actionsData] = await Promise.all([
         fetchDashboardStats(),
         fetchActiveShifts(),
+        fetchAdminActions(10), // Fetch last 10 admin actions
       ]);
 
       setStats(statsData);
-      setActivities([]); // TODO: Implement admin activity log
+      setActivities(actionsData);
       setShifts(shiftsData);
       setLoading(false);
     } catch (error) {
@@ -209,16 +210,16 @@ export default function OverviewDashboard({ onViewShift }: OverviewDashboardProp
                 <div key={idx} className="p-3 bg-muted/30 border border-border rounded">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm font-medium text-foreground">{activity.action.replace(/_/g, ' ').toUpperCase()}</p>
+                      <p className="text-sm font-medium text-foreground">{activity.action_type.replace(/_/g, ' ').toUpperCase()}</p>
                       <p className="text-xs text-muted-foreground mt-1">
                         By: {activity.admin_name}
                       </p>
-                      {activity.data?.reason && (
-                        <p className="text-xs text-muted-foreground mt-1 italic">"{activity.data.reason}"</p>
+                      {activity.reason && (
+                        <p className="text-xs text-muted-foreground mt-1 italic">"{activity.reason}"</p>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(activity.timestamp).toLocaleTimeString()}
+                      {new Date(activity.created_at).toLocaleTimeString()}
                     </p>
                   </div>
                 </div>

@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
-import { Eye, AlertCircle, CheckCircle, Camera } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Eye, AlertCircle, CheckCircle, Camera, Upload } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Textarea } from '../ui/textarea';
 import { Input } from '../ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
-import { fetchActiveShifts, forceEndShift } from '../lib/api';
+import { fetchActiveShifts, forceEndShift, uploadOdometerPhoto } from '../lib/api';
 
 interface LiveShiftsMonitorProps {
   onViewShift: (shiftId: string) => void;
@@ -19,11 +19,12 @@ export default function LiveShiftsMonitor({ onViewShift }: LiveShiftsMonitorProp
     shiftId: null,
     reason: '',
   });
-  const [uploadDialog, setUploadDialog] = useState<{ open: boolean; shiftId: string | null; photoUrl: string }>({
+  const [uploadDialog, setUploadDialog] = useState<{ open: boolean; shiftId: string | null; file: File | null }>({
     open: false,
     shiftId: null,
-    photoUrl: '',
+    file: null,
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchShifts();
@@ -60,14 +61,27 @@ export default function LiveShiftsMonitor({ onViewShift }: LiveShiftsMonitorProp
   };
 
   const handleUploadOdometer = async () => {
-    if (!uploadDialog.shiftId || !uploadDialog.photoUrl.trim()) {
-      alert('Please provide a photo URL');
+    if (!uploadDialog.shiftId || !uploadDialog.file) {
+      alert('Please select a file to upload');
       return;
     }
 
-    // TODO: Implement odometer photo upload via Supabase
-    alert('Odometer photo upload functionality to be implemented');
-    setUploadDialog({ open: false, shiftId: null, photoUrl: '' });
+    try {
+      await uploadOdometerPhoto(uploadDialog.file, uploadDialog.shiftId);
+      setUploadDialog({ open: false, shiftId: null, file: null });
+      fetchShifts();
+      alert('Odometer photo uploaded successfully');
+    } catch (error) {
+      console.error('Error uploading odometer:', error);
+      alert('Failed to upload odometer photo');
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setUploadDialog({ ...uploadDialog, file });
+    }
   };
 
   const getShiftStatus = (shift: any) => {
@@ -174,7 +188,7 @@ export default function LiveShiftsMonitor({ onViewShift }: LiveShiftsMonitorProp
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => setUploadDialog({ open: true, shiftId: shift.id, photoUrl: '' })}
+                            onClick={() => setUploadDialog({ open: true, shiftId: shift.id, file: null })}
                             className="text-xs border-[#f59e0b] text-[#f59e0b] hover:bg-[#f59e0b]/10"
                           >
                             <Camera className="w-3 h-3 mr-1" />
@@ -235,22 +249,36 @@ export default function LiveShiftsMonitor({ onViewShift }: LiveShiftsMonitorProp
           <DialogHeader>
             <DialogTitle>Upload Start Odometer Photo</DialogTitle>
             <DialogDescription>
-              Provide a URL to the odometer photo. This will be attached to the shift.
+              Select an odometer photo file to upload. This will be attached to the shift.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <label className="text-sm font-medium text-foreground mb-2 block">Photo URL</label>
-            <Input
-              placeholder="https://example.com/photo.jpg"
-              value={uploadDialog.photoUrl}
-              onChange={(e) => setUploadDialog({ ...uploadDialog, photoUrl: e.target.value })}
+            <label className="text-sm font-medium text-foreground mb-2 block">Select Photo File</label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="block w-full text-sm text-foreground
+                file:mr-4 file:py-2 file:px-4
+                file:rounded file:border-0
+                file:text-sm file:font-semibold
+                file:bg-primary file:text-primary-foreground
+                hover:file:bg-primary/90
+                cursor-pointer"
             />
+            {uploadDialog.file && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Selected: {uploadDialog.file.name} ({(uploadDialog.file.size / 1024).toFixed(1)} KB)
+              </p>
+            )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setUploadDialog({ open: false, shiftId: null, photoUrl: '' })}>
+            <Button variant="outline" onClick={() => setUploadDialog({ open: false, shiftId: null, file: null })}>
               Cancel
             </Button>
-            <Button onClick={handleUploadOdometer}>
+            <Button onClick={handleUploadOdometer} disabled={!uploadDialog.file}>
+              <Upload className="w-4 h-4 mr-2" />
               Upload Photo
             </Button>
           </DialogFooter>
