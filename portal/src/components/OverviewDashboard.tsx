@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AlertTriangle, Activity, Users, Truck, Camera, XCircle, Clock } from 'lucide-react';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
 import { Card } from '../ui/card';
-
-const API_BASE = `https://${projectId}.supabase.co/functions/v1/make-server-987e9da2`;
+import { fetchDashboardStats, fetchActiveShifts } from '../lib/api';
 
 interface OverviewDashboardProps {
   onViewShift: (shiftId: string) => void;
@@ -23,19 +21,14 @@ export default function OverviewDashboard({ onViewShift }: OverviewDashboardProp
 
   const fetchData = async () => {
     try {
-      const [statsRes, activityRes, shiftsRes] = await Promise.all([
-        fetch(`${API_BASE}/stats`, { headers: { Authorization: `Bearer ${publicAnonKey}` } }),
-        fetch(`${API_BASE}/activity`, { headers: { Authorization: `Bearer ${publicAnonKey}` } }),
-        fetch(`${API_BASE}/shifts?status=active`, { headers: { Authorization: `Bearer ${publicAnonKey}` } }),
+      const [statsData, shiftsData] = await Promise.all([
+        fetchDashboardStats(),
+        fetchActiveShifts(),
       ]);
 
-      const statsData = await statsRes.json();
-      const activityData = await activityRes.json();
-      const shiftsData = await shiftsRes.json();
-
       setStats(statsData);
-      setActivities(activityData.activities || []);
-      setShifts(shiftsData.shifts || []);
+      setActivities([]); // TODO: Implement admin activity log
+      setShifts(shiftsData);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -52,11 +45,11 @@ export default function OverviewDashboard({ onViewShift }: OverviewDashboardProp
   }
 
   const stuckShifts = shifts.filter(s => {
-    const duration = Date.now() - new Date(s.start_time).getTime();
+    const duration = Date.now() - new Date(s.started_at).getTime();
     return duration > 12 * 60 * 60 * 1000;
   });
 
-  const missingOdometer = shifts.filter(s => !s.start_odometer_photo);
+  const missingOdometer = shifts.filter(s => !s.odometer_photo_url);
 
   return (
     <div className="p-6 space-y-6">
@@ -173,12 +166,12 @@ export default function OverviewDashboard({ onViewShift }: OverviewDashboardProp
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-foreground">{shift.driver_id}</p>
-                        <p className="text-xs text-muted-foreground">Vehicle: {shift.vehicle_id}</p>
+                        <p className="text-sm font-medium text-foreground">{shift.driver?.full_name || 'Unknown Driver'}</p>
+                        <p className="text-xs text-muted-foreground">Vehicle: {shift.vehicle?.registration || 'Unknown'}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-xs text-[#ef4444] font-medium">STUCK</p>
-                        <p className="text-xs text-muted-foreground">{Math.floor((Date.now() - new Date(shift.start_time).getTime()) / 3600000)}h</p>
+                        <p className="text-xs text-muted-foreground">{Math.floor((Date.now() - new Date(shift.started_at).getTime()) / 3600000)}h</p>
                       </div>
                     </div>
                   </div>
@@ -191,8 +184,8 @@ export default function OverviewDashboard({ onViewShift }: OverviewDashboardProp
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-foreground">{shift.driver_id}</p>
-                        <p className="text-xs text-muted-foreground">Vehicle: {shift.vehicle_id}</p>
+                        <p className="text-sm font-medium text-foreground">{shift.driver?.full_name || 'Unknown Driver'}</p>
+                        <p className="text-xs text-muted-foreground">Vehicle: {shift.vehicle?.registration || 'Unknown'}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-xs text-[#f59e0b] font-medium">NO ODOMETER</p>

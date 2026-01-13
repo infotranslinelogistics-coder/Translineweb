@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Truck, CheckCircle, XCircle, Wrench, AlertTriangle } from 'lucide-react';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
 import { Button } from '../ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Input } from '../ui/input';
-
-const API_BASE = `https://${projectId}.supabase.co/functions/v1/make-server-987e9da2`;
+import { fetchVehicles } from '../lib/api';
+import { supabase } from '../lib/supabase-client';
 
 export default function VehiclesManagement() {
   const [vehicles, setVehicles] = useState<any[]>([]);
@@ -20,16 +19,13 @@ export default function VehiclesManagement() {
   });
 
   useEffect(() => {
-    fetchVehicles();
+    fetchVehiclesData();
   }, []);
 
-  const fetchVehicles = async () => {
+  const fetchVehiclesData = async () => {
     try {
-      const response = await fetch(`${API_BASE}/vehicles`, {
-        headers: { Authorization: `Bearer ${publicAnonKey}` },
-      });
-      const data = await response.json();
-      setVehicles(data.vehicles || []);
+      const data = await fetchVehicles();
+      setVehicles(data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching vehicles:', error);
@@ -44,29 +40,18 @@ export default function VehiclesManagement() {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/vehicles`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${publicAnonKey}`,
-        },
-        body: JSON.stringify({
-          license_plate: createDialog.license_plate,
-          make: createDialog.make,
-          model: createDialog.model,
-          year: createDialog.year ? parseInt(createDialog.year) : null,
-          admin_name: 'Admin User',
-        }),
+      const { error } = await supabase.from('vehicles').insert({
+        registration: createDialog.license_plate,
+        make: createDialog.make,
+        model: createDialog.model,
+        year: createDialog.year ? parseInt(createDialog.year) : null,
       });
 
-      if (response.ok) {
-        setCreateDialog({ open: false, license_plate: '', make: '', model: '', year: '' });
-        fetchVehicles();
-        alert('Vehicle created successfully');
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.error}`);
-      }
+      if (error) throw error;
+
+      setCreateDialog({ open: false, license_plate: '', make: '', model: '', year: '' });
+      fetchVehiclesData();
+      alert('Vehicle created successfully');
     } catch (error) {
       console.error('Error creating vehicle:', error);
       alert('Failed to create vehicle');
@@ -81,26 +66,18 @@ export default function VehiclesManagement() {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/vehicles/${vehicleId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${publicAnonKey}`,
-        },
-        body: JSON.stringify({
+      const { error } = await supabase
+        .from('vehicles')
+        .update({
           maintenance_required: newStatus,
           status: newStatus ? 'maintenance' : 'active',
-          admin_name: 'Admin User',
-        }),
-      });
+        })
+        .eq('id', vehicleId);
 
-      if (response.ok) {
-        fetchVehicles();
-        alert(`Vehicle maintenance flag ${newStatus ? 'set' : 'cleared'} successfully`);
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.error}`);
-      }
+      if (error) throw error;
+
+      fetchVehiclesData();
+      alert(`Vehicle maintenance flag ${newStatus ? 'set' : 'cleared'} successfully`);
     } catch (error) {
       console.error('Error updating vehicle:', error);
       alert('Failed to update vehicle');
@@ -171,7 +148,7 @@ export default function VehiclesManagement() {
                     )}
                   </TableCell>
                   <TableCell className="text-sm font-medium text-foreground font-mono">
-                    {vehicle.license_plate}
+                    {vehicle.registration}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">{vehicle.make || '-'}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{vehicle.model || '-'}</TableCell>

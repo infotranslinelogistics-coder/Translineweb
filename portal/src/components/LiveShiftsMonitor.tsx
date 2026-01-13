@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Eye, AlertCircle, CheckCircle, Camera } from 'lucide-react';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Textarea } from '../ui/textarea';
 import { Input } from '../ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
-
-const API_BASE = `https://${projectId}.supabase.co/functions/v1/make-server-987e9da2`;
+import { fetchActiveShifts, forceEndShift } from '../lib/api';
 
 interface LiveShiftsMonitorProps {
   onViewShift: (shiftId: string) => void;
@@ -35,11 +33,8 @@ export default function LiveShiftsMonitor({ onViewShift }: LiveShiftsMonitorProp
 
   const fetchShifts = async () => {
     try {
-      const response = await fetch(`${API_BASE}/shifts?status=active`, {
-        headers: { Authorization: `Bearer ${publicAnonKey}` },
-      });
-      const data = await response.json();
-      setShifts(data.shifts || []);
+      const data = await fetchActiveShifts();
+      setShifts(data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching shifts:', error);
@@ -54,26 +49,10 @@ export default function LiveShiftsMonitor({ onViewShift }: LiveShiftsMonitorProp
     }
 
     try {
-      const response = await fetch(`${API_BASE}/shifts/${forceEndDialog.shiftId}/force-end`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${publicAnonKey}`,
-        },
-        body: JSON.stringify({
-          reason: forceEndDialog.reason,
-          admin_name: 'Admin User',
-        }),
-      });
-
-      if (response.ok) {
-        setForceEndDialog({ open: false, shiftId: null, reason: '' });
-        fetchShifts();
-        alert('Shift force-ended successfully');
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.error}`);
-      }
+      await forceEndShift(forceEndDialog.shiftId, forceEndDialog.reason, 'Admin User');
+      setForceEndDialog({ open: false, shiftId: null, reason: '' });
+      fetchShifts();
+      alert('Shift force-ended successfully');
     } catch (error) {
       console.error('Error force-ending shift:', error);
       alert('Failed to force-end shift');
@@ -86,40 +65,17 @@ export default function LiveShiftsMonitor({ onViewShift }: LiveShiftsMonitorProp
       return;
     }
 
-    try {
-      const response = await fetch(`${API_BASE}/shifts/${uploadDialog.shiftId}/upload-odometer`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${publicAnonKey}`,
-        },
-        body: JSON.stringify({
-          photo_url: uploadDialog.photoUrl,
-          type: 'start',
-          admin_name: 'Admin User',
-        }),
-      });
-
-      if (response.ok) {
-        setUploadDialog({ open: false, shiftId: null, photoUrl: '' });
-        fetchShifts();
-        alert('Odometer photo uploaded successfully');
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.error}`);
-      }
-    } catch (error) {
-      console.error('Error uploading odometer:', error);
-      alert('Failed to upload odometer photo');
-    }
+    // TODO: Implement odometer photo upload via Supabase
+    alert('Odometer photo upload functionality to be implemented');
+    setUploadDialog({ open: false, shiftId: null, photoUrl: '' });
   };
 
   const getShiftStatus = (shift: any) => {
-    const duration = Date.now() - new Date(shift.start_time).getTime();
+    const duration = Date.now() - new Date(shift.started_at).getTime();
     const hours = duration / (1000 * 60 * 60);
 
     if (hours > 12) return 'error';
-    if (!shift.start_odometer_photo) return 'warning';
+    if (!shift.odometer_photo_url) return 'warning';
     return 'ok';
   };
 
@@ -190,14 +146,14 @@ export default function LiveShiftsMonitor({ onViewShift }: LiveShiftsMonitorProp
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="text-sm font-medium text-foreground">{shift.driver_id}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{shift.vehicle_id}</TableCell>
+                    <TableCell className="text-sm font-medium text-foreground">{shift.driver?.full_name || 'Unknown'}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{shift.vehicle?.registration || 'Unknown'}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(shift.start_time).toLocaleString()}
+                      {new Date(shift.started_at).toLocaleString()}
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{getDurationString(shift.start_time)}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{getDurationString(shift.started_at)}</TableCell>
                     <TableCell>
-                      {shift.start_odometer_photo ? (
+                      {shift.odometer_photo_url ? (
                         <CheckCircle className="w-4 h-4 text-[#10b981]" />
                       ) : (
                         <Camera className="w-4 h-4 text-[#f59e0b]" />
@@ -214,7 +170,7 @@ export default function LiveShiftsMonitor({ onViewShift }: LiveShiftsMonitorProp
                           <Eye className="w-3 h-3 mr-1" />
                           View
                         </Button>
-                        {!shift.start_odometer_photo && (
+                        {!shift.odometer_photo_url && (
                           <Button
                             size="sm"
                             variant="outline"

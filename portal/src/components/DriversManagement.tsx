@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Users, CheckCircle, XCircle, Lock, Unlock } from 'lucide-react';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
 import { Button } from '../ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Input } from '../ui/input';
-
-const API_BASE = `https://${projectId}.supabase.co/functions/v1/make-server-987e9da2`;
+import { fetchDrivers } from '../lib/api';
+import { supabase } from '../lib/supabase-client';
 
 export default function DriversManagement() {
   const [drivers, setDrivers] = useState<any[]>([]);
@@ -19,16 +18,13 @@ export default function DriversManagement() {
   });
 
   useEffect(() => {
-    fetchDrivers();
+    fetchDriversData();
   }, []);
 
-  const fetchDrivers = async () => {
+  const fetchDriversData = async () => {
     try {
-      const response = await fetch(`${API_BASE}/drivers`, {
-        headers: { Authorization: `Bearer ${publicAnonKey}` },
-      });
-      const data = await response.json();
-      setDrivers(data.drivers || []);
+      const data = await fetchDrivers();
+      setDrivers(data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching drivers:', error);
@@ -43,28 +39,18 @@ export default function DriversManagement() {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/drivers`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${publicAnonKey}`,
-        },
-        body: JSON.stringify({
-          name: createDialog.name,
-          email: createDialog.email,
-          phone: createDialog.phone,
-          admin_name: 'Admin User',
-        }),
+      const { error } = await supabase.from('profiles').insert({
+        full_name: createDialog.name,
+        email: createDialog.email,
+        phone: createDialog.phone,
+        role: 'driver',
       });
 
-      if (response.ok) {
-        setCreateDialog({ open: false, name: '', email: '', phone: '' });
-        fetchDrivers();
-        alert('Driver created successfully');
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.error}`);
-      }
+      if (error) throw error;
+
+      setCreateDialog({ open: false, name: '', email: '', phone: '' });
+      fetchDriversData();
+      alert('Driver created successfully');
     } catch (error) {
       console.error('Error creating driver:', error);
       alert('Failed to create driver');
@@ -79,25 +65,15 @@ export default function DriversManagement() {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/drivers/${driverId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${publicAnonKey}`,
-        },
-        body: JSON.stringify({
-          status: newStatus,
-          admin_name: 'Admin User',
-        }),
-      });
+      const { error } = await supabase
+        .from('profiles')
+        .update({ status: newStatus })
+        .eq('id', driverId);
 
-      if (response.ok) {
-        fetchDrivers();
-        alert(`Driver ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully`);
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.error}`);
-      }
+      if (error) throw error;
+
+      fetchDriversData();
+      alert(`Driver ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully`);
     } catch (error) {
       console.error('Error updating driver:', error);
       alert('Failed to update driver status');
@@ -161,7 +137,7 @@ export default function DriversManagement() {
                       </div>
                     )}
                   </TableCell>
-                  <TableCell className="text-sm font-medium text-foreground">{driver.name}</TableCell>
+                  <TableCell className="text-sm font-medium text-foreground">{driver.full_name}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{driver.email || '-'}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{driver.phone || '-'}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
