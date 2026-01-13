@@ -26,11 +26,30 @@ try {
   console.log('Portal React app mounted successfully');
 } catch (error) {
   console.error('Failed to mount Portal app:', error);
-  document.body.innerHTML = `
-    <div style="padding: 20px; font-family: sans-serif;">
-      <h1 style="color: #ef4444;">Portal Failed to Load</h1>
-      <p>Error: ${error instanceof Error ? error.message : String(error)}</p>
-      <pre style="background: #f3f4f6; padding: 10px; border-radius: 4px; overflow: auto;">${error instanceof Error ? error.stack : ''}</pre>
-    </div>
-  `;
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorStack = error instanceof Error ? error.stack : '';
+  
+  // Safely create error display without innerHTML injection
+  const errorDiv = document.createElement('div');
+  errorDiv.style.cssText = 'padding: 20px; font-family: sans-serif; max-width: 800px; margin: 0 auto;';
+  
+  const title = document.createElement('h1');
+  title.style.color = '#ef4444';
+  title.textContent = 'Portal Failed to Load';
+  
+  const message = document.createElement('p');
+  message.textContent = `Error: ${errorMessage}`;
+  
+  const stack = document.createElement('pre');
+  stack.style.cssText = 'background: #f3f4f6; padding: 10px; border-radius: 4px; overflow: auto; white-space: pre-wrap;';
+  stack.textContent = errorStack || '';
+  
+  errorDiv.appendChild(title);
+  errorDiv.appendChild(message);
+  if (errorStack) {
+    errorDiv.appendChild(stack);
+  }
+  
+  document.body.innerHTML = '';
+  document.body.appendChild(errorDiv);
 }
